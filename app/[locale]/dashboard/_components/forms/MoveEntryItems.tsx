@@ -130,7 +130,7 @@ export function MoveEntryItems({
 		if (checkedItemId != null) {
 			form.setValue('items', [checkedItemId])
 		}
-	}, [checkedItemId])
+	}, [checkedItemId, form])
 
 	return (
 		<Dialog open={open} onOpenChange={resetCloseDialog}>
