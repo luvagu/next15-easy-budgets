@@ -1,1 +1,0 @@
-ALTER TABLE "loans" ADD COLUMN "is_against" boolean NOT NULL;

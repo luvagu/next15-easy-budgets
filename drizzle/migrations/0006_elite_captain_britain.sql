@@ -1,1 +1,0 @@
-ALTER TABLE "loans" RENAME COLUMN "total_amount" TO "total_debt";

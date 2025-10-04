@@ -5,57 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1744769836741,
-      "tag": "0000_fine_old_lace",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1756855470124,
-      "tag": "0001_mysterious_jack_flag",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1757126208336,
-      "tag": "0002_cold_power_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1757859986496,
-      "tag": "0003_absent_junta",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1757861155553,
-      "tag": "0004_slimy_jamie_braddock",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1758197859308,
-      "tag": "0005_parched_justice",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1758233126775,
-      "tag": "0006_elite_captain_britain",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1758563782087,
-      "tag": "0007_futuristic_captain_stacy",
+      "when": 1759541557634,
+      "tag": "0000_material_kate_bishop",
       "breakpoints": true
     }
   ]

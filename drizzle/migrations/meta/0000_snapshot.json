@@ -1,5 +1,5 @@
 {
-  "id": "571b8753-9db8-4ab5-be4c-d6a241fdce07",
+  "id": "ad277abf-61f0-4e15-a473-8ce27a8bf0aa",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -27,9 +27,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "max_amount": {
-          "name": "max_amount",
-          "type": "numeric",
+        "total_quota": {
+          "name": "total_quota",
+          "type": "real",
           "primaryKey": false,
           "notNull": true
         },
@@ -38,6 +38,20 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "expenses_total": {
+          "name": "expenses_total",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "available_quota": {
+          "name": "available_quota",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
         },
         "created_at": {
           "name": "created_at",
@@ -97,8 +111,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "budget_id": {
-          "name": "budget_id",
+        "parent_id": {
+          "name": "parent_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -111,7 +125,7 @@
         },
         "amount": {
           "name": "amount",
-          "type": "numeric",
+          "type": "real",
           "primaryKey": false,
           "notNull": true
         },
@@ -131,11 +145,11 @@
         }
       },
       "indexes": {
-        "expenses.budget_id_index": {
-          "name": "expenses.budget_id_index",
+        "expenses.parent_id_index": {
+          "name": "expenses.parent_id_index",
           "columns": [
             {
-              "expression": "budget_id",
+              "expression": "parent_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -148,12 +162,12 @@
         }
       },
       "foreignKeys": {
-        "expenses_budget_id_budgets_id_fk": {
-          "name": "expenses_budget_id_budgets_id_fk",
+        "expenses_parent_id_budgets_id_fk": {
+          "name": "expenses_parent_id_budgets_id_fk",
           "tableFrom": "expenses",
           "tableTo": "budgets",
           "columnsFrom": [
-            "budget_id"
+            "parent_id"
           ],
           "columnsTo": [
             "id"
@@ -179,8 +193,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "loan_id": {
-          "name": "loan_id",
+        "parent_id": {
+          "name": "parent_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -193,7 +207,7 @@
         },
         "amount": {
           "name": "amount",
-          "type": "numeric",
+          "type": "real",
           "primaryKey": false,
           "notNull": true
         },
@@ -213,11 +227,11 @@
         }
       },
       "indexes": {
-        "installments.loan_id_index": {
-          "name": "installments.loan_id_index",
+        "installments.parent_id_index": {
+          "name": "installments.parent_id_index",
           "columns": [
             {
-              "expression": "loan_id",
+              "expression": "parent_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -230,12 +244,12 @@
         }
       },
       "foreignKeys": {
-        "installments_loan_id_loans_id_fk": {
-          "name": "installments_loan_id_loans_id_fk",
+        "installments_parent_id_loans_id_fk": {
+          "name": "installments_parent_id_loans_id_fk",
           "tableFrom": "installments",
           "tableTo": "loans",
           "columnsFrom": [
-            "loan_id"
+            "parent_id"
           ],
           "columnsTo": [
             "id"
@@ -273,9 +287,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "total_amount": {
-          "name": "total_amount",
-          "type": "numeric",
+        "total_debt": {
+          "name": "total_debt",
+          "type": "real",
           "primaryKey": false,
           "notNull": true
         },
@@ -284,6 +298,26 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "is_against": {
+          "name": "is_against",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "installmens_total": {
+          "name": "installmens_total",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "due_amount": {
+          "name": "due_amount",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
         },
         "created_at": {
           "name": "created_at",
