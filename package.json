@@ -4,8 +4,8 @@
 	"private": true,
 	"scripts": {
 		"dev": "concurrently --raw \"next dev --turbopack\" \"i18nexus listen\"",
-		"build": "i18nexus pull && next build",
-		"start": "i18nexus pull && next start",
+		"build": "next build",
+		"start": "next start",
 		"lint": "eslint",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",

@@ -6,9 +6,11 @@ const intlMiddleware = createMiddleware(routing)
 
 const isPublicRoute = createRouteMatcher([
 	'/',
-	'/es(.*)',
+	'/es',
 	'/sign-in(.*)',
 	'/sign-up(.*)',
+	'/es/sign-in(.*)',
+	'/es/sign-up(.*)',
 	'/api(.*)',
 ])
 
@@ -21,12 +23,5 @@ export default clerkMiddleware(async (auth, req) => {
 })
 
 export const config = {
-	matcher: [
-		// Skip Next.js internals and all static files, unless found in search params
-		'/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-		// Always run for API routes
-		'/(api|trpc)(.*)',
-		// Match only internationalized pathnames
-		'/(en|es)/:path*',
-	],
+	matcher: ['/((?!api|trpc|_next|_vercel|.*\\..*).*)'],
 }

@@ -3,8 +3,12 @@ import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { env } from '@/data/env/server'
 import { deleteUser } from '@/server/db/users'
+import { NextRequest } from 'next/server'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+	// Test route
+	// return Response.json({ message: 'The route is working' })
+
 	const headerPayload = await headers()
 	const svixId = headerPayload.get('svix-id')
 	const svixTimestamp = headerPayload.get('svix-timestamp')
