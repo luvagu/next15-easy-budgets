@@ -47,7 +47,7 @@ export default async function NewEntryItemPage({
 
 	return (
 		<PageWithBackButton
-			backButtonHref={`/dashboard/${entry}/${id}/edit?tab=${TABS.DETAILS}`}
+			backButtonHref={`/dashboard/${entry}/${id}/edit?tab=${TABS.ITEMS}`}
 			parentPageName={parentPageName}
 			childPageName={childPageName}
 		>
