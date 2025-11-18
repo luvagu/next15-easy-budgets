@@ -127,6 +127,7 @@ export function TodosClient({
 
 			// Check for browser compatibility (vendor prefix for Safari)
 			const SpeechRecognition: typeof window.SpeechRecognition =
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				window.SpeechRecognition || (window as any).webkitSpeechRecognition
 
 			if (SpeechRecognition) {
