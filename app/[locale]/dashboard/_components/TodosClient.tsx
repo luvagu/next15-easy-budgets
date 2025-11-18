@@ -117,7 +117,6 @@ export function TodosClient({
 		}
 	}
 
-	/* eslint-disable @typescript-eslint/no-explicit-any */
 	const handleOnListening = () => {
 		if (typeof window !== 'undefined') {
 			if (voiceEnabled && recognitionRef.current) {
@@ -143,10 +142,7 @@ export function TodosClient({
 					toast(t('alert_listening'))
 				}
 
-				// Use a broad `any` type for the event to avoid TypeScript errors for
-				// browser-prefixed SpeechRecognition event types that may not exist
-				// in the project's DOM lib typings.
-				recognition.onresult = (event: any) => {
+				recognition.onresult = event => {
 					let interimTranscript = ''
 					let finalTranscript = ''
 
@@ -169,7 +165,7 @@ export function TodosClient({
 					toast(t('alert_listening_ended'))
 				}
 
-				recognition.onerror = (event: any) => {
+				recognition.onerror = event => {
 					setVoiceEnabled(false)
 					form.reset()
 
