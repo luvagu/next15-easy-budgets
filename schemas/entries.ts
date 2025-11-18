@@ -56,3 +56,9 @@ export const getMoveItemsSchema = ({
 			message: selectItemMessage,
 		}),
 	})
+
+export const getAddTodoSchema = (message = 'Required') =>
+	z.object({
+		name: z.string().min(3, message),
+		completed: z.boolean().optional(),
+	})

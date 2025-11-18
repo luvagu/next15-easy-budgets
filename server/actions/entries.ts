@@ -200,6 +200,7 @@ export async function updateBudgetExpenses(
 
 	const { success, data } = UpdateEntryItemsSchema.safeParse(unsafeData)
 	const errorMessage = t('error_saving_budget_expenses')
+
 	if (
 		!success ||
 		userId == null ||

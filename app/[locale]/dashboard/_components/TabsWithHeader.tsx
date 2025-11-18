@@ -32,22 +32,28 @@ export function TabsWithHeader({
 	const [selectedTab, setSetselectedTab] = useState(defaultTab)
 
 	const entry =
-		selectedTab === ENTRY_TYPES.BUDGETS ? ENTRY_TYPES.BUDGET : ENTRY_TYPES.LOAN
+		selectedTab === ENTRY_TYPES.BUDGETS
+			? ENTRY_TYPES.BUDGET
+			: selectedTab === ENTRY_TYPES.LOANS
+			? ENTRY_TYPES.LOAN
+			: null
 
 	return (
 		<>
 			<h1 className='text-2xl sm:text-3xl font-semibold flex items-center justify-between'>
 				<span>{title}</span>
-				<Button className='group' size={'sm'} asChild>
-					<Link href={`/dashboard/${entry}/new`}>
-						<span>
-							{t('label_add_entry_or_item', {
-								entryOrItem: common(`label_${entry}`, { count: 1 }),
-							})}
-						</span>
-						<PlusIcon className='size-4 group-hover:translate-x-1 transition-transform' />
-					</Link>
-				</Button>
+				{entry && (
+					<Button className='group' size={'sm'} asChild>
+						<Link href={`/dashboard/${entry}/new`}>
+							<span>
+								{t('label_add_entry_or_item', {
+									entryOrItem: common(`label_${entry}`, { count: 1 }),
+								})}
+							</span>
+							<PlusIcon className='size-4 group-hover:translate-x-1 transition-transform' />
+						</Link>
+					</Button>
+				)}
 			</h1>
 			<Tabs
 				defaultValue={selectedTab}

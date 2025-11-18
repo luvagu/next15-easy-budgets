@@ -59,7 +59,7 @@ async function EntryCard({
 	const item = isLoan ? ENTRY_TYPES.INSTALLMENT : ENTRY_TYPES.EXPENSE
 
 	return (
-		<Card className={`${getCardClassNameBgColors(bgColor)} py-5 gap-3`}>
+		<Card className={`${getCardClassNameBgColors(bgColor)} py-4 gap-3`}>
 			<CardHeader className='px-5'>
 				<div className='flex gap-2 justify-between items-center'>
 					<CardTitle>

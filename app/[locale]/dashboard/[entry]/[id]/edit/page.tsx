@@ -29,6 +29,7 @@ import { MessageSquareWarningIcon, PlusIcon } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { getBudget, getBudgets } from '@/server/db/budgets'
 import { getLoan, getLoans } from '@/server/db/loans'
+import { Badge } from '@/components/ui/badge'
 
 export default async function EditEntryPage({
 	params,
@@ -65,6 +66,9 @@ export default async function EditEntryPage({
 
 	const returnTap = isBudget ? ENTRY_TYPES.BUDGETS : ENTRY_TYPES.LOANS
 
+	const itemsCount =
+		(budgetData?.budgetExpenses || loanData?.loanInstallments)?.length || 0
+
 	// loaclization texts
 	const parentPageName = t(`form_edit_${entry}_title`)
 	const childPageName = entryData?.name
@@ -86,6 +90,12 @@ export default async function EditEntryPage({
 						<TabsTrigger value={TABS.DETAILS}>{t('tab_details')}</TabsTrigger>
 						<TabsTrigger value={TABS.ITEMS}>
 							{t(`tab_${entry}_items`)}
+							<Badge
+								variant={'outline'}
+								className='h-5 min-w-5 rounded-full px-1 font-mono tabular-nums'
+							>
+								{itemsCount}
+							</Badge>
 						</TabsTrigger>
 					</div>
 					<Button

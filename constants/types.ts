@@ -23,6 +23,7 @@ export const ENTRY_TYPES = {
 	LOANS: 'loans',
 	INSTALLMENTS: 'installments',
 	INSTALLMENT: 'installment',
+	TODOS: 'todos',
 } as const
 
 export const TABS = {
@@ -30,6 +31,7 @@ export const TABS = {
 	LOANS: ENTRY_TYPES.LOANS,
 	DETAILS: 'details',
 	ITEMS: 'items',
+	TODOS: 'todos',
 } as const
 
 export type FormEntryType = typeof ENTRY_TYPES.BUDGET | typeof ENTRY_TYPES.LOAN
@@ -61,6 +63,7 @@ export const CACHE_TAGS = {
 	expenses: ENTRY_TYPES.EXPENSES,
 	loans: ENTRY_TYPES.LOANS,
 	installments: ENTRY_TYPES.INSTALLMENTS,
+	todos: ENTRY_TYPES.TODOS,
 }
 
 export type GrigEntryTypes =

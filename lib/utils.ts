@@ -60,13 +60,40 @@ export function getProgresBgColor(progressValue: number, isLoan: boolean) {
 	return isLoan ? bgColors.green : bgColors.red
 }
 
-export function normalizeEntryName(name: string) {
-	const nameWithoutWhiteSpaces = name.trim()
+export function normalizeEntryName(word: string) {
+	// handle empty input
+	if (!word) return ''
 
-	return (
-		nameWithoutWhiteSpaces.charAt(0).toUpperCase() +
-		nameWithoutWhiteSpaces.slice(1)
-	)
+	// 1) collapse multiple spaces to one and trim ends
+	const collapsed = word.replace(/\s+/g, ' ').trim()
+
+	// 2) remove spaces around separators globally so "jun - jul" => "jun-jul"
+	const normalized = collapsed.replace(/\s*([\-\/_])\s*/g, '$1')
+
+	// 3) capitalize first character
+	const capitalized =
+		normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase()
+
+	// 3) split by single space into tokens
+	const tokens = capitalized.split(' ').map(tok => {
+		// if token contains any separator, normalize casing and capitalize parts
+		if (/[\/\-_]/.test(tok)) {
+			let s = tok.toLowerCase()
+			// capitalize first character
+			if (s.length > 0) s = s.charAt(0).toUpperCase() + s.slice(1)
+			// capitalize after separators
+			s = s.replace(
+				/([\-\/_])([a-z])/g,
+				(_m, sep, ch) => sep + ch.toUpperCase()
+			)
+			return s
+		}
+
+		// non-separator tokens: leave original token (trimmed-capitalized) as-is
+		return tok
+	})
+
+	return tokens.join(' ')
 }
 
 export function getItemsParentKey(entryItem: FormEntryItemType) {
@@ -85,4 +112,18 @@ export function getEntryKey(entry: FormEntryType) {
 	return entry === ENTRY_TYPES.BUDGET
 		? ENTRY_TYPES.EXPENSE
 		: ENTRY_TYPES.INSTALLMENT
+}
+
+interface PostgresError {
+	code: string
+}
+
+// Check if an error is a Postgres error
+export function isPostgresError(error: unknown): error is PostgresError {
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		typeof (error as PostgresError).code === 'string'
+	)
 }

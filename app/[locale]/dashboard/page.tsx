@@ -6,6 +6,8 @@ import { ENTRY_TYPES, TABS } from '@/constants/types'
 import { getBudgets } from '@/server/db/budgets'
 import { getLoans } from '@/server/db/loans'
 import { auth } from '@clerk/nextjs/server'
+import { TodosClient } from './_components/TodosClient'
+import { getTodos } from '@/server/db/todos'
 
 export default async function DashboardPage({
 	searchParams,
@@ -22,8 +24,11 @@ export default async function DashboardPage({
 	const { tab } = await searchParams
 	const currentTab = Array.isArray(tab) ? tab[0] : tab || TABS.BUDGETS
 
-	const budgets = await getBudgets(userId)
-	const loans = await getLoans(userId)
+	const [budgets, loans, todosLis] = await Promise.all([
+		getBudgets(userId),
+		getLoans(userId),
+		await getTodos(userId),
+	])
 
 	const tabsWithHeaderProps = {
 		title: t('dashboard_page_title'),
@@ -38,6 +43,11 @@ export default async function DashboardPage({
 				value: TABS.LOANS,
 				name: common('label_loan', { count: 0 }),
 				badge: loans.length ?? 0,
+			},
+			{
+				value: TABS.TODOS,
+				name: common('label_todos'),
+				badge: todosLis.length ?? 0,
 			},
 		],
 		tabsContent: [
@@ -58,6 +68,10 @@ export default async function DashboardPage({
 					) : (
 						<EntriesGrid type={ENTRY_TYPES.LOAN} entriesData={loans} />
 					),
+			},
+			{
+				value: TABS.TODOS,
+				content: <TodosClient todosLis={todosLis} />,
 			},
 		],
 	}

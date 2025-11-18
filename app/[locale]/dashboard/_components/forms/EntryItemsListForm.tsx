@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
 	Form,
 	FormControl,
@@ -28,6 +27,8 @@ import {
 } from '@/server/actions/entries'
 import { Checkbox } from '@/components/ui/checkbox'
 import { MoveEntryItems } from './MoveEntryItems'
+import { normalizeEntryName } from '@/lib/utils'
+import { Item, ItemActions, ItemContent, ItemTitle } from '@/components/ui/item'
 
 export function EntryItemsListForm({
 	entryItem,
@@ -62,7 +63,12 @@ export function EntryItemsListForm({
 			? updateBudgetExpenses
 			: updateLoanInstallments
 
-		const data = await action(parentId, values)
+		const data = await action(parentId, {
+			items: values.items.map(item => ({
+				...item,
+				name: normalizeEntryName(item.name),
+			})),
+		})
 
 		if (data.error) {
 			toast.error(data.message)
@@ -100,69 +106,75 @@ export function EntryItemsListForm({
 						})
 
 						return (
-							<Card key={item.id} className='relative gap-2 pt-3.5 pb-4'>
-								<CardHeader className='px-4'>
-									<Badge variant='outline'>{formattedDate}</Badge>
-								</CardHeader>
-								<CardContent className='flex flex-col sm:flex-row gap-4 px-4'>
-									<Input
-										type='hidden'
-										{...form.register(`items.${index}.id`)}
-									/>
-									<FormField
-										control={form.control}
-										name={`items.${index}.name`}
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>{t('label_name')}</FormLabel>
-												<FormControl>
-													<Input {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
-										name={`items.${index}.amount`}
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>{t(`label_${entryItem}_amount`)}</FormLabel>
-												<FormControl>
-													<Input
-														type='number'
-														{...field}
-														step='any'
-														min={0}
-														onChange={e =>
-															field.onChange(
-																isNaN(e.target.valueAsNumber)
-																	? ''
-																	: e.target.valueAsNumber
-															)
-														}
-														// {...form.register(`items.${index}.amount`, {
-														// 	valueAsNumber: true,
-														// })}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<AlertDialogTrigger asChild>
-										<Button
-											variant='outline'
-											type='button'
-											className='sm:self-baseline-last'
-											onClick={() => setDeleteItemId(item.id)}
-										>
-											<span className='text-destructive'>
-												{t('label_delete')}
-											</span>
-										</Button>
-									</AlertDialogTrigger>
-								</CardContent>
+							<Item variant='outline' key={item.id} className='relative'>
+								<ItemContent className='gap-4'>
+									<ItemTitle>
+										<Badge variant='outline'>{formattedDate}</Badge>
+									</ItemTitle>
+									<div className='flex flex-col sm:flex-row gap-4'>
+										<Input
+											type='hidden'
+											{...form.register(`items.${index}.id`)}
+										/>
+										<FormField
+											control={form.control}
+											name={`items.${index}.name`}
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>{t('label_name')}</FormLabel>
+													<FormControl>
+														<Input {...field} />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={form.control}
+											name={`items.${index}.amount`}
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>
+														{t(`label_${entryItem}_amount`)}
+													</FormLabel>
+													<FormControl>
+														<Input
+															type='number'
+															{...field}
+															step='any'
+															min={0}
+															onChange={e =>
+																field.onChange(
+																	isNaN(e.target.valueAsNumber)
+																		? ''
+																		: e.target.valueAsNumber
+																)
+															}
+															// {...form.register(`items.${index}.amount`, {
+															// 	valueAsNumber: true,
+															// })}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<ItemActions>
+											<AlertDialogTrigger asChild>
+												<Button
+													variant='outline'
+													type='button'
+													onClick={() => setDeleteItemId(item.id)}
+													className='self-baseline-last'
+												>
+													<span className='text-destructive'>
+														{t('label_delete')}
+													</span>
+												</Button>
+											</AlertDialogTrigger>
+										</ItemActions>
+									</div>
+								</ItemContent>
 								<Checkbox
 									className='absolute right-4 top-4 shadow'
 									checked={checkedItemId === item.id}
@@ -173,7 +185,7 @@ export function EntryItemsListForm({
 										}
 									}}
 								/>
-							</Card>
+							</Item>
 						)
 					})}
 					<div className='self-end'>
