@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -56,6 +56,8 @@ export function TodosClient({
 	const [currentTaskId, setCurrentTaskId] = useState<undefined | string>()
 	const [isUpdating, setIsUpdating] = useState(false)
 	const [isDeleting, setIsDeleting] = useState(false)
+
+	const recognitionRef = useRef<SpeechRecognition | null>(null)
 
 	const isEmptyList = todosLis.length === 0
 
@@ -117,59 +119,70 @@ export function TodosClient({
 
 	/* eslint-disable @typescript-eslint/no-explicit-any */
 	const handleOnListening = () => {
-		const SpeechRecognition =
-			(window as any).SpeechRecognition ||
-			(window as any).webkitSpeechRecognition
-
-		if (!SpeechRecognition) {
-			toast.warning('Your browser does not support Speech Recognition.')
-			return
-		}
-
-		const recognition = new SpeechRecognition()
-		recognition.continuous = false // Set to true for continuous recognition
-		recognition.interimResults = true // Get interim results as speech is recognized
-		recognition.lang = locale ?? 'en-US'
-
-		recognition.onstart = () => {
-			setVoiceEnabled(true)
-			toast(t('alert_listening'))
-		}
-
-		// Use a broad `any` type for the event to avoid TypeScript errors for
-		// browser-prefixed SpeechRecognition event types that may not exist
-		// in the project's DOM lib typings.
-		recognition.onresult = (event: any) => {
-			let interimTranscript = ''
-			let finalTranscript = ''
-
-			for (let i = event.resultIndex; i < event.results.length; ++i) {
-				const result = event.results[i]
-				if (result.isFinal) {
-					finalTranscript += result[0].transcript
-				} else {
-					interimTranscript += result[0].transcript
-				}
+		if (typeof window !== 'undefined') {
+			if (voiceEnabled && recognitionRef.current) {
+				recognitionRef.current.stop()
+				setVoiceEnabled(false)
+				return
 			}
-			form.setValue('name', finalTranscript || interimTranscript)
+
+			// Check for browser compatibility (vendor prefix for Safari)
+			const SpeechRecognition: typeof window.SpeechRecognition =
+				window.SpeechRecognition || (window as any).webkitSpeechRecognition
+
+			if (SpeechRecognition) {
+				recognitionRef.current = new SpeechRecognition()
+				const recognition = recognitionRef.current
+
+				recognition.continuous = false // Set to true for continuous recognition
+				recognition.interimResults = true // Get interim results as speech is recognized
+				recognition.lang = locale ?? 'en-US'
+
+				recognition.onstart = () => {
+					setVoiceEnabled(true)
+					toast(t('alert_listening'))
+				}
+
+				// Use a broad `any` type for the event to avoid TypeScript errors for
+				// browser-prefixed SpeechRecognition event types that may not exist
+				// in the project's DOM lib typings.
+				recognition.onresult = (event: any) => {
+					let interimTranscript = ''
+					let finalTranscript = ''
+
+					for (let i = event.resultIndex; i < event.results.length; ++i) {
+						const result = event.results[i]
+						if (result.isFinal) {
+							finalTranscript += result[0].transcript
+						} else {
+							interimTranscript += result[0].transcript
+						}
+					}
+
+					form.setValue('name', finalTranscript || interimTranscript)
+				}
+
+				recognition.onend = () => {
+					setVoiceEnabled(false)
+					form.handleSubmit(onSubmit)()
+
+					toast(t('alert_listening_ended'))
+				}
+
+				recognition.onerror = (event: any) => {
+					setVoiceEnabled(false)
+					form.reset()
+
+					toast.error(t('error_listening'), {
+						description: JSON.stringify(event.error),
+					})
+				}
+
+				recognition.start()
+			} else {
+				toast.warning(t('warning_unsupported_browser'))
+			}
 		}
-
-		recognition.onend = () => {
-			setVoiceEnabled(false)
-			form.handleSubmit(onSubmit)()
-			toast(t('alert_listening_ended'))
-		}
-
-		recognition.onerror = (event: any) => {
-			setVoiceEnabled(false)
-			form.reset()
-
-			toast.error(t('error_listening'), {
-				description: JSON.stringify(event.error),
-			})
-		}
-
-		recognition.start()
 	}
 
 	return (
@@ -194,6 +207,7 @@ export function TodosClient({
 														: 'placeholder_add_todo'
 												)}
 												disabled={voiceEnabled}
+												autoComplete='off'
 											/>
 											<InputGroupAddon align='inline-end'>
 												<Tooltip>
@@ -223,7 +237,7 @@ export function TodosClient({
 								variant='outline'
 								size='icon'
 								type='submit'
-								disabled={form.formState.isSubmitting}
+								disabled={voiceEnabled || form.formState.isSubmitting}
 							>
 								{form.formState.isSubmitting ? <Spinner /> : <PlusIcon />}
 							</Button>
