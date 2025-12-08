@@ -22,6 +22,7 @@ import { CardBgColorsRG } from './CardBgColorsRG'
 import { normalizeEntryName } from '@/lib/utils'
 import { UpdateLoanEntry } from '@/constants/types'
 import { createLoan, updateLoan } from '@/server/actions/entries'
+import { useEffect } from 'react'
 
 export function LoanEntryForm({ loan }: UpdateLoanEntry) {
 	const t = useTranslations('forms')
@@ -55,6 +56,17 @@ export function LoanEntryForm({ loan }: UpdateLoanEntry) {
 			})
 		}
 	}
+
+	useEffect(() => {
+		if (loan) {
+			form.reset({
+				name: loan?.name ?? '',
+				totalDebt: loan?.totalDebt ?? 0,
+				bgColor: loan?.bgColor ?? 'sky',
+				isAgainst: loan?.isAgainst ?? false,
+			})
+		}
+	}, [form, loan])
 
 	return (
 		<Form {...form}>

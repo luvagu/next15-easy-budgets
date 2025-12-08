@@ -16,7 +16,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations, useFormatter } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DeleteEntryAlertDialog } from '../DeleteEntryAlertDialog'
 import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
@@ -86,6 +86,20 @@ export function EntryItemsListForm({
 			setCheckedItemId('')
 		}
 	}
+
+	useEffect(() => {
+		if (items.length) {
+			form.reset({
+				items: items.map(item => {
+					return {
+						id: item.id,
+						name: item.name ?? '',
+						amount: item.amount ?? 0,
+					}
+				}),
+			})
+		}
+	}, [form, items])
 
 	return (
 		<Form {...form}>

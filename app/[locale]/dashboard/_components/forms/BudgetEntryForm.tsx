@@ -20,6 +20,7 @@ import { CardBgColorsRG } from './CardBgColorsRG'
 import { normalizeEntryName } from '@/lib/utils'
 import { UpdateBudgetEntry } from '@/constants/types'
 import { createBudget, updateBudget } from '@/server/actions/entries'
+import { useEffect } from 'react'
 
 export function BudgetEntryForm({ budget }: UpdateBudgetEntry) {
 	const t = useTranslations('forms')
@@ -53,6 +54,16 @@ export function BudgetEntryForm({ budget }: UpdateBudgetEntry) {
 			})
 		}
 	}
+
+	useEffect(() => {
+		if (budget) {
+			form.reset({
+				name: budget?.name ?? '',
+				totalQuota: budget?.totalQuota ?? 0,
+				bgColor: budget?.bgColor ?? 'white',
+			})
+		}
+	}, [form, budget])
 
 	return (
 		<Form {...form}>
