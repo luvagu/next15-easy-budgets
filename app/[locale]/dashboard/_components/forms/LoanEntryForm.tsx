@@ -12,7 +12,7 @@ import {
 	FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { getLoanEntrySchema } from '@/schemas/entries'
 import { Switch } from '@/components/ui/switch'
@@ -26,13 +26,10 @@ import { useEffect } from 'react'
 
 export function LoanEntryForm({ loan }: UpdateLoanEntry) {
 	const t = useTranslations('forms')
-	const format = useFormatter()
 	const message = t('required')
 	const pastDateMessage = t('error_past_date')
 
 	const LoanEntrySchema = getLoanEntrySchema(message, pastDateMessage)
-
-	console.log('@@ loan', loan)
 
 	const form = useForm<z.infer<typeof LoanEntrySchema>>({
 		resolver: zodResolver(LoanEntrySchema),
