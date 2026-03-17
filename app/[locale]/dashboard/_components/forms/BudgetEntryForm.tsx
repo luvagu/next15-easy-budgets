@@ -25,6 +25,7 @@ import { useEffect } from 'react'
 export function BudgetEntryForm({ budget }: UpdateBudgetEntry) {
 	const t = useTranslations('forms')
 	const message = t('required')
+
 	const BudgetEntrySchema = getBudgetEntrySchema(message)
 
 	const form = useForm<z.infer<typeof BudgetEntrySchema>>({
@@ -101,7 +102,7 @@ export function BudgetEntryForm({ budget }: UpdateBudgetEntry) {
 											field.onChange(
 												isNaN(e.target.valueAsNumber)
 													? ''
-													: e.target.valueAsNumber
+													: e.target.valueAsNumber,
 											)
 										}
 										// {...form.register('totalQuota', { valueAsNumber: true })}

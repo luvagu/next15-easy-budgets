@@ -29,8 +29,9 @@ export function TabsWithHeader({
 	}[]
 	handleSelectedDashboadTab: (selectedTab: string) => void
 }) {
-	const common = useTranslations('common')
-	const t = useTranslations('dashboard')
+	const commonT = useTranslations('common')
+	const dashboardT = useTranslations('dashboard')
+
 	const [selectedTab, setSelectedTab] = useState(defaultTab)
 
 	// Sync when defaultTab changes after hydration (e.g. from localStorage)
@@ -53,8 +54,8 @@ export function TabsWithHeader({
 					<Button className='group' size={'sm'} asChild>
 						<Link href={`/dashboard/${entry}/new`}>
 							<span>
-								{t('label_add_entry_or_item', {
-									entryOrItem: common(`label_${entry}`, { count: 1 }),
+								{dashboardT('label_add_entry_or_item', {
+									entryOrItem: commonT(`label_${entry}`, { count: 1 }),
 								})}
 							</span>
 							<PlusIcon className='size-4 group-hover:translate-x-1 transition-transform' />

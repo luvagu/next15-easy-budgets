@@ -37,7 +37,9 @@ export function EntryItemsListForm({
 	entries,
 }: UpdateEntryItem) {
 	const t = useTranslations('forms')
+
 	const message = t('required')
+
 	const EntryItemsSchema = getEntryItemsSchema(message)
 
 	const [deleteItemId, setDeleteItemId] = useState('')
@@ -161,7 +163,7 @@ export function EntryItemsListForm({
 																field.onChange(
 																	isNaN(e.target.valueAsNumber)
 																		? ''
-																		: e.target.valueAsNumber
+																		: e.target.valueAsNumber,
 																)
 															}
 															// {...form.register(`items.${index}.amount`, {

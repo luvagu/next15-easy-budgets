@@ -24,6 +24,7 @@ export function DashboardPageClient({
 }: DashboardPageProps) {
 	const commonT = useTranslations('common')
 	const dashboardT = useTranslations('dashboard')
+
 	const [settings, setSettings, , isHydrated] = useLocalStorage<UserSettings>(
 		'userSettings',
 		{

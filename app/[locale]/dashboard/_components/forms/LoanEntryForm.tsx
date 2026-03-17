@@ -26,7 +26,9 @@ import { useEffect } from 'react'
 
 export function LoanEntryForm({ loan }: UpdateLoanEntry) {
 	const t = useTranslations('forms')
+
 	const message = t('required')
+
 	const pastDateMessage = t('error_past_date')
 
 	const LoanEntrySchema = getLoanEntrySchema(message, pastDateMessage)

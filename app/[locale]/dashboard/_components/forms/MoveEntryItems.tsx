@@ -59,26 +59,26 @@ export function MoveEntryItems({
 	entries = [],
 	items = [],
 }: MoveEntryItemsForm) {
-	const common = useTranslations('common')
-	const t = useTranslations('modals')
+	const commonT = useTranslations('common')
+	const modalsT = useTranslations('modals')
 
 	const [setselectAllChecked, setSetselectAllChecked] = useState(false)
 
-	const itemText = common(`label_${entryItem}`, {
+	const itemText = commonT(`label_${entryItem}`, {
 		count: 1,
 	})
-	const itemsText = common(`label_${entryItem}`, {
+	const itemsText = commonT(`label_${entryItem}`, {
 		count: 0,
 	})
-	const parentText = common(`label_${getItemsParentKey(entryItem)}`, {
+	const parentText = commonT(`label_${getItemsParentKey(entryItem)}`, {
 		count: 1,
 	})
 
 	const MoveItemsSchema = getMoveItemsSchema({
-		selectParentIdMessage: t('message_select_new_parent', {
+		selectParentIdMessage: modalsT('message_select_new_parent', {
 			parent: parentText.toLocaleLowerCase(),
 		}),
-		selectItemMessage: t('message_select_item', {
+		selectItemMessage: modalsT('message_select_item', {
 			item: itemText.toLocaleLowerCase(),
 		}),
 	})
@@ -137,12 +137,12 @@ export function MoveEntryItems({
 			<DialogContent className='sm:max-w-[425px]'>
 				<DialogHeader>
 					<DialogTitle>
-						{t('label_move_items', {
+						{modalsT('label_move_items', {
 							items: itemsText.toLocaleLowerCase(),
 						})}
 					</DialogTitle>
 					<DialogDescription>
-						{t('description_move_items', {
+						{modalsT('description_move_items', {
 							items: itemsText.toLocaleLowerCase(),
 							parent: parentText.toLocaleLowerCase(),
 						})}
@@ -156,7 +156,7 @@ export function MoveEntryItems({
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>
-										{t('label_new_parent', {
+										{modalsT('label_new_parent', {
 											parent: parentText,
 										})}
 									</FormLabel>
@@ -168,15 +168,15 @@ export function MoveEntryItems({
 													role='combobox'
 													className={cn(
 														'w-[200px] justify-between',
-														!field.value && 'text-muted-foreground'
+														!field.value && 'text-muted-foreground',
 													)}
 												>
 													{field.value
 														? entries.find(entry => entry.id === field.value)
 																?.name
-														: t('label_select_parent', {
+														: modalsT('label_select_parent', {
 																parent: parentText.toLowerCase(),
-														  })}
+															})}
 													<ChevronsUpDown className='opacity-50' />
 												</Button>
 											</FormControl>
@@ -184,14 +184,14 @@ export function MoveEntryItems({
 										<PopoverContent className='w-[200px] p-0'>
 											<Command>
 												<CommandInput
-													placeholder={t('label_search_parent', {
+													placeholder={modalsT('label_search_parent', {
 														parent: parentText.toLowerCase(),
 													})}
 													className='h-9'
 												/>
 												<CommandList>
 													<CommandEmpty>
-														{t('label_parent_not_found', {
+														{modalsT('label_parent_not_found', {
 															parent: parentText.toLowerCase(),
 														})}
 													</CommandEmpty>
@@ -211,7 +211,7 @@ export function MoveEntryItems({
 																		'ml-auto',
 																		entry.id === field.value
 																			? 'opacity-100'
-																			: 'opacity-0'
+																			: 'opacity-0',
 																	)}
 																/>
 															</CommandItem>
@@ -233,7 +233,7 @@ export function MoveEntryItems({
 									<div className='mb-4'>
 										<FormLabel>{itemsText}</FormLabel>
 										<FormDescription>
-											{t('label_select_items', {
+											{modalsT('label_select_items', {
 												items: itemsText.toLowerCase(),
 												parent: parentText.toLowerCase(),
 											})}
@@ -245,7 +245,7 @@ export function MoveEntryItems({
 											checked={setselectAllChecked}
 											onCheckedChange={selectAllItems}
 										/>
-										<Label htmlFor='all'>{t('label_select_all')}</Label>
+										<Label htmlFor='all'>{modalsT('label_select_all')}</Label>
 									</div>
 
 									<Separator className='my-2' decorative />
@@ -270,12 +270,12 @@ export function MoveEntryItems({
 																			? field.onChange([
 																					...field.value,
 																					item.id,
-																			  ])
+																				])
 																			: field.onChange(
 																					field.value?.filter(
-																						value => value !== item.id
-																					)
-																			  )
+																						value => value !== item.id,
+																					),
+																				)
 																	}}
 																/>
 															</FormControl>
@@ -294,10 +294,10 @@ export function MoveEntryItems({
 						/>
 						<DialogFooter>
 							<DialogClose asChild>
-								<Button variant='outline'>{common('label_cancel')}</Button>
+								<Button variant='outline'>{commonT('label_cancel')}</Button>
 							</DialogClose>
 							<Button type='submit' disabled={form.formState.isSubmitting}>
-								{common('label_save')}
+								{commonT('label_save')}
 							</Button>
 						</DialogFooter>
 					</form>

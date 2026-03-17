@@ -22,7 +22,9 @@ import { createExpense, createInstallment } from '@/server/actions/entries'
 
 export function EntryItemForm({ parentId, entryItem }: CreateEntryItem) {
 	const t = useTranslations('forms')
+
 	const message = t('required')
+
 	const EntryItemSchema = getEntryItemSchema(message)
 
 	const form = useForm<z.infer<typeof EntryItemSchema>>({
@@ -42,7 +44,7 @@ export function EntryItemForm({ parentId, entryItem }: CreateEntryItem) {
 				...values,
 				name: normalizeEntryName(values.name),
 			},
-			parentId
+			parentId,
 		)
 
 		if (response?.error) {
@@ -86,7 +88,7 @@ export function EntryItemForm({ parentId, entryItem }: CreateEntryItem) {
 											field.onChange(
 												isNaN(e.target.valueAsNumber)
 													? ''
-													: e.target.valueAsNumber
+													: e.target.valueAsNumber,
 											)
 										}
 										// {...form.register('amount', { valueAsNumber: true })}
