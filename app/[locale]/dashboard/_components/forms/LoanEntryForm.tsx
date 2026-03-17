@@ -12,7 +12,7 @@ import {
 	FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { getLoanEntrySchema } from '@/schemas/entries'
 import { Switch } from '@/components/ui/switch'
@@ -26,8 +26,13 @@ import { useEffect } from 'react'
 
 export function LoanEntryForm({ loan }: UpdateLoanEntry) {
 	const t = useTranslations('forms')
+	const format = useFormatter()
 	const message = t('required')
-	const LoanEntrySchema = getLoanEntrySchema(message)
+	const pastDateMessage = t('error_past_date')
+
+	const LoanEntrySchema = getLoanEntrySchema(message, pastDateMessage)
+
+	console.log('@@ loan', loan)
 
 	const form = useForm<z.infer<typeof LoanEntrySchema>>({
 		resolver: zodResolver(LoanEntrySchema),
@@ -36,6 +41,7 @@ export function LoanEntryForm({ loan }: UpdateLoanEntry) {
 			totalDebt: loan?.totalDebt ?? 0,
 			bgColor: loan?.bgColor ?? 'sky',
 			isAgainst: loan?.isAgainst ?? false,
+			dueDate: loan?.dueDate ?? (undefined as unknown as Date),
 		},
 	})
 
@@ -64,6 +70,7 @@ export function LoanEntryForm({ loan }: UpdateLoanEntry) {
 				totalDebt: loan?.totalDebt ?? 0,
 				bgColor: loan?.bgColor ?? 'sky',
 				isAgainst: loan?.isAgainst ?? false,
+				dueDate: loan?.dueDate ?? undefined,
 			})
 		}
 	}, [form, loan])
@@ -104,7 +111,7 @@ export function LoanEntryForm({ loan }: UpdateLoanEntry) {
 											field.onChange(
 												isNaN(e.target.valueAsNumber)
 													? ''
-													: e.target.valueAsNumber
+													: e.target.valueAsNumber,
 											)
 										}
 										// {...form.register('totalDebt', { valueAsNumber: true })}
@@ -148,6 +155,31 @@ export function LoanEntryForm({ loan }: UpdateLoanEntry) {
 										{t(field.value ? 'label_loan_against' : 'label_loan_for')}
 									</Label>
 								</div>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name='dueDate'
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>{t('label_loan_due_date')}</FormLabel>
+								<FormControl>
+									<Input
+										type='date'
+										value={
+											field.value
+												? new Date(field.value).toISOString().split('T')[0]
+												: ''
+										}
+										onChange={e =>
+											field.onChange(
+												e.target.value ? new Date(e.target.value) : null,
+											)
+										}
+									/>
+								</FormControl>
 								<FormMessage />
 							</FormItem>
 						)}

@@ -15,6 +15,13 @@
       "when": 1763438491295,
       "tag": "0001_little_purifiers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773726676755,
+      "tag": "0002_bumpy_master_chief",
+      "breakpoints": true
     }
   ]
 }

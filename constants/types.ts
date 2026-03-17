@@ -1,5 +1,5 @@
 export const CARD_BG_COLORS = {
-	white: ['bg-white', 'text-gray-700'],
+	white: ['bg-muted', 'text-gray-700'],
 	orange: ['bg-orange-100', 'text-orange-700'],
 	yellow: ['bg-yellow-100', 'text-yellow-700'],
 	lime: ['bg-lime-100', 'text-lime-700'],
@@ -32,6 +32,8 @@ export const TABS = {
 	DETAILS: 'details',
 	ITEMS: 'items',
 	TODOS: 'todos',
+	FOR: 'for',
+	AGAINST: 'against',
 } as const
 
 export type FormEntryType = typeof ENTRY_TYPES.BUDGET | typeof ENTRY_TYPES.LOAN
@@ -82,10 +84,51 @@ export type SharedEntryFields = {
 	installmensTotal?: number | null
 	availableQuota?: number | null
 	dueAmount?: number | null
+	dueDate?: Date | null
 	amount?: number | null
 	bgColor: CardBgColors
 	createdAt?: Date
 	updatedAt?: Date
+}
+
+export type BudgetEntryFields = {
+	id: string
+	name: string
+	totalQuota?: number | null
+	expensesTotal?: number | null
+	availableQuota?: number | null
+	amount?: number | null
+	bgColor: CardBgColors
+	createdAt?: Date
+	updatedAt?: Date
+}
+
+export type LoanEntryFields = {
+	id: string
+	name: string
+	totalDebt?: number | null
+	isAgainst?: boolean | null
+	installmensTotal?: number | null
+	dueAmount?: number | null
+	dueDate?: Date | null
+	bgColor: CardBgColors
+	createdAt?: Date
+	updatedAt?: Date
+}
+
+export type TodoEntryFields = {
+	id: string
+	name: string
+	clerkUserId: string
+	createdAt: Date
+	updatedAt: Date
+	completed: boolean
+}
+
+export type DashboardPageProps = {
+	budgets: BudgetEntryFields[]
+	loans: LoanEntryFields[]
+	todosLis: TodoEntryFields[]
 }
 
 export type GridEntriesArray = SharedEntryFields[]
@@ -119,6 +162,7 @@ export type LoanEntryDetails = {
 	bgColor: CardBgColors
 	totalDebt: number
 	isAgainst: boolean
+	dueDate: Date | null
 	loanInstallments: {
 		id: string
 		name: string
@@ -135,6 +179,7 @@ export type UpdateLoanEntry = {
 		bgColor: CardBgColors
 		totalDebt: number
 		isAgainst: boolean
+		dueDate: Date | null
 	}
 }
 
@@ -164,4 +209,28 @@ export type MoveEntryItemsForm = {
 		id: string
 		name: string
 	}[]
+}
+
+export type LoanTypeTabs = typeof TABS.FOR | typeof TABS.AGAINST
+
+export type UserSettings = {
+	selectedDashboadTab: DashboardTabs
+	selectedLoanTypeTab: LoanTypeTabs
+}
+
+export type BudgetsSummary = {
+	grandBudgetsTotalQuota: number
+	grandBudgetsExpensesTotal: number
+	grandBudgetsAvailableQuota: number
+}
+
+export type LoansSummaryGroup = {
+	grandLoansTotalDebt: number
+	grandLoansInstallemtsTotal: number
+	grandLoansDueAmoutTotal: number
+}
+
+export type LoansSummary = {
+	for: LoansSummaryGroup
+	against: LoansSummaryGroup
 }

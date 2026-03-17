@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { getCardBgColorNames } from '@/lib/utils'
 
-const getGenericEntryTypes = (message: string) => {
+const getGenericEntryTypes = (message: string, pastDateMessage?: string) => {
 	return z.object({
 		name: z.string().min(3, message),
 		amount: z.number().nonnegative(message),
@@ -9,6 +9,14 @@ const getGenericEntryTypes = (message: string) => {
 		totalDebt: z.number().nonnegative(message),
 		bgColor: z.enum([...getCardBgColorNames()]),
 		isAgainst: z.boolean(),
+		dueDate: z.date().refine(
+			date => {
+				const today = new Date()
+				today.setHours(0, 0, 0, 0)
+				return date >= today
+			},
+			{ message: pastDateMessage ?? 'Due date cannot be in the past' }
+		),
 	})
 }
 
@@ -19,12 +27,16 @@ export const getBudgetEntrySchema = (message = 'Required') =>
 		bgColor: true,
 	})
 
-export const getLoanEntrySchema = (message = 'Required') =>
-	getGenericEntryTypes(message).pick({
+export const getLoanEntrySchema = (
+	message = 'Required',
+	pastDateMessage?: string
+) =>
+	getGenericEntryTypes(message, pastDateMessage).pick({
 		name: true,
 		totalDebt: true,
 		bgColor: true,
 		isAgainst: true,
+		dueDate: true,
 	})
 
 export const getEntryItemSchema = (message = 'Required') =>
@@ -40,7 +52,7 @@ export const getEntryItemsSchema = (message = 'Required') =>
 				id: z.string().min(1, message),
 				name: z.string().min(3, message),
 				amount: z.number().nonnegative(message),
-			})
+			}),
 		),
 	})
 

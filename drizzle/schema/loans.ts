@@ -1,6 +1,14 @@
 import { CardBgColors } from '@/constants/types'
 import { relations } from 'drizzle-orm'
-import { index, pgTable, text, uuid, boolean, real } from 'drizzle-orm/pg-core'
+import {
+	index,
+	pgTable,
+	text,
+	uuid,
+	boolean,
+	real,
+	date,
+} from 'drizzle-orm/pg-core'
 import { createdAt, id, updatedAt } from '../schemaHelpers'
 
 export const LoansTable = pgTable(
@@ -14,10 +22,11 @@ export const LoansTable = pgTable(
 		isAgainst: boolean('is_against').notNull(),
 		installmensTotal: real('installmens_total').default(0),
 		dueAmount: real('due_amount').default(0),
+		dueDate: date('due_date', { mode: 'date' }),
 		createdAt,
 		updatedAt,
 	},
-	table => [index('loans.clerk_user_id_index').on(table.clerkUserId)]
+	table => [index('loans.clerk_user_id_index').on(table.clerkUserId)],
 )
 
 export const loansRelations = relations(LoansTable, ({ many }) => ({
@@ -36,7 +45,7 @@ export const InstallmentsTable = pgTable(
 		createdAt,
 		updatedAt,
 	},
-	table => [index('installments.parent_id_index').on(table.parentId)]
+	table => [index('installments.parent_id_index').on(table.parentId)],
 )
 
 export const installmentsRelations = relations(
@@ -46,5 +55,5 @@ export const installmentsRelations = relations(
 			fields: [InstallmentsTable.parentId],
 			references: [LoansTable.id],
 		}),
-	})
+	}),
 )

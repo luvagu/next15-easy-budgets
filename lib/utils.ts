@@ -1,11 +1,13 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import {
+	BudgetEntryFields,
 	CARD_BG_COLORS,
 	CardBgColors,
 	ENTRY_TYPES,
 	FormEntryItemType,
 	FormEntryType,
+	LoanEntryFields,
 } from '@/constants/types'
 import { defaultLocale } from '@/i18n/routing'
 
@@ -20,7 +22,7 @@ export function getCardBgColorNames() {
 export function getCardBgColorsArray() {
 	return Object.entries(CARD_BG_COLORS) as [
 		CardBgColors,
-		(typeof CARD_BG_COLORS)[CardBgColors]
+		(typeof CARD_BG_COLORS)[CardBgColors],
 	][]
 }
 
@@ -45,11 +47,11 @@ export function calculateProgressValue(current: number, max: number) {
 
 export function getProgresBgColor(progressValue: number, isLoan: boolean) {
 	const bgColors = {
-		red: 'bg-red-500',
-		purple: 'bg-purple-500',
-		yellow: 'bg-yellow-500',
-		blue: 'bg-blue-500',
-		green: 'bg-green-500',
+		red: 'bg-red-400',
+		purple: 'bg-purple-400',
+		yellow: 'bg-yellow-400',
+		blue: 'bg-blue-400',
+		green: 'bg-green-400',
 	}
 
 	if (progressValue < 25) return isLoan ? bgColors.red : bgColors.green
@@ -84,7 +86,7 @@ export function normalizeEntryName(word: string) {
 			// capitalize after separators
 			s = s.replace(
 				/([\-\/_])([a-z])/g,
-				(_m, sep, ch) => sep + ch.toUpperCase()
+				(_m, sep, ch) => sep + ch.toUpperCase(),
 			)
 			return s
 		}
@@ -126,4 +128,79 @@ export function isPostgresError(error: unknown): error is PostgresError {
 		'code' in error &&
 		typeof (error as PostgresError).code === 'string'
 	)
+}
+
+export function getDueDateStatus(dueDate: Date | null | undefined) {
+	if (!dueDate) return { isOverdue: false, isDueToday: false }
+
+	const today = new Date()
+	today.setHours(0, 0, 0, 0)
+	const dueDateNorm = new Date(new Date(dueDate).setHours(0, 0, 0, 0))
+
+	return {
+		isOverdue: dueDateNorm < today,
+		isDueToday: dueDateNorm.getTime() === today.getTime(),
+	}
+}
+
+export function getOverdueLoansCount(loans: LoanEntryFields[]) {
+	return loans.filter(
+		loan => loan.dueDate && getDueDateStatus(loan.dueDate).isOverdue
+	).length
+}
+
+export function getBudgetsSummary(budgets: BudgetEntryFields[]) {
+	return budgets.reduce(
+		(acc, budget) => ({
+			grandBudgetsTotalQuota:
+				acc.grandBudgetsTotalQuota + (budget.totalQuota ?? 0),
+			grandBudgetsExpensesTotal:
+				acc.grandBudgetsExpensesTotal + (budget.expensesTotal ?? 0),
+			grandBudgetsAvailableQuota:
+				acc.grandBudgetsAvailableQuota + (budget.availableQuota ?? 0),
+		}),
+		{
+			grandBudgetsTotalQuota: 0,
+			grandBudgetsExpensesTotal: 0,
+			grandBudgetsAvailableQuota: 0,
+		},
+	)
+}
+
+export function getLoansSummary(loans: LoanEntryFields[]) {
+	const initial = {
+		grandLoansTotalDebt: 0,
+		grandLoansInstallemtsTotal: 0,
+		grandLoansDueAmoutTotal: 0,
+	}
+
+	const forLoans = loans.filter(loan => !loan.isAgainst)
+	const againstLoans = loans.filter(loan => loan.isAgainst)
+
+	return {
+		for: forLoans.reduce(
+			(acc, loan) => ({
+				grandLoansTotalDebt:
+					acc.grandLoansTotalDebt + (loan.totalDebt ?? 0),
+				grandLoansInstallemtsTotal:
+					acc.grandLoansInstallemtsTotal +
+					(loan.installmensTotal ?? 0),
+				grandLoansDueAmoutTotal:
+					acc.grandLoansDueAmoutTotal + (loan.dueAmount ?? 0),
+			}),
+			{ ...initial },
+		),
+		against: againstLoans.reduce(
+			(acc, loan) => ({
+				grandLoansTotalDebt:
+					acc.grandLoansTotalDebt + (loan.totalDebt ?? 0),
+				grandLoansInstallemtsTotal:
+					acc.grandLoansInstallemtsTotal +
+					(loan.installmensTotal ?? 0),
+				grandLoansDueAmoutTotal:
+					acc.grandLoansDueAmoutTotal + (loan.dueAmount ?? 0),
+			}),
+			{ ...initial },
+		),
+	}
 }

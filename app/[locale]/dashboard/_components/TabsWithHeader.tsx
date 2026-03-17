@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, ReactNode, useState } from 'react'
+import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,7 @@ export function TabsWithHeader({
 	defaultTab,
 	tabsList,
 	tabsContent,
+	handleSelectedDashboadTab,
 }: {
 	title: string
 	defaultTab: string
@@ -26,17 +27,23 @@ export function TabsWithHeader({
 		value: string
 		content: ReactNode
 	}[]
+	handleSelectedDashboadTab: (selectedTab: string) => void
 }) {
 	const common = useTranslations('common')
 	const t = useTranslations('dashboard')
-	const [selectedTab, setSetselectedTab] = useState(defaultTab)
+	const [selectedTab, setSelectedTab] = useState(defaultTab)
+
+	// Sync when defaultTab changes after hydration (e.g. from localStorage)
+	useEffect(() => {
+		setSelectedTab(defaultTab)
+	}, [defaultTab])
 
 	const entry =
 		selectedTab === ENTRY_TYPES.BUDGETS
 			? ENTRY_TYPES.BUDGET
 			: selectedTab === ENTRY_TYPES.LOANS
-			? ENTRY_TYPES.LOAN
-			: null
+				? ENTRY_TYPES.LOAN
+				: null
 
 	return (
 		<>
@@ -56,8 +63,11 @@ export function TabsWithHeader({
 				)}
 			</h1>
 			<Tabs
-				defaultValue={selectedTab}
-				onValueChange={selectedTab => setSetselectedTab(selectedTab)}
+				value={selectedTab}
+				onValueChange={selectedTab => {
+					setSelectedTab(selectedTab)
+					handleSelectedDashboadTab(selectedTab)
+				}}
 			>
 				<TabsList>
 					{tabsList.map(tab => (

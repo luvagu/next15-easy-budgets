@@ -91,6 +91,7 @@ async function getLoanInternal({ id, userId }: { id: string; userId: string }) {
 			totalDebt: true,
 			installmensTotal: true,
 			dueAmount: true,
+			dueDate: true,
 			isAgainst: true,
 		},
 		where: ({ clerkUserId, id: loanId }, { and, eq }) =>

@@ -1,3 +1,5 @@
+'use client'
+
 import { CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import {
@@ -10,19 +12,17 @@ import {
 	curencyFormatter,
 	getProgresBgColor,
 } from '@/lib/utils'
-import { getLocale, getTranslations } from 'next-intl/server'
+import { useLocale, useTranslations } from 'next-intl'
 
-export async function EntryProgress({
+export function EntryProgress({
 	type,
 	entryData,
 }: {
 	type: FormEntryType
 	entryData: SharedEntryFields
-	// t: Awaited<ReturnType<typeof getTranslations>>
-	// locale: Awaited<ReturnType<typeof getLocale>>
 }) {
-	const t = await getTranslations('progress_card')
-	const locale = await getLocale()
+	const t = useTranslations('progress_card')
+	const locale = useLocale()
 
 	const {
 		totalQuota,
@@ -50,12 +50,12 @@ export async function EntryProgress({
 	const valueB = curencyFormatter(isBudget ? usedBalance : amountPaid, locale)
 	const valueC = curencyFormatter(
 		isBudget ? remainingQuota : remainingBalance,
-		locale
+		locale,
 	)
 
 	const progressValue = calculateProgressValue(
 		isBudget ? usedBalance : amountPaid,
-		isBudget ? budgetTotal : loanTotal
+		isBudget ? budgetTotal : loanTotal,
 	)
 
 	const progressBgColor = getProgresBgColor(progressValue, isLoan)
