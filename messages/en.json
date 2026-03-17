@@ -152,9 +152,11 @@
 		"label_loan_total_due": "Due",
 		"label_loan_due_date": "Due: {date}",
 		"label_loan_overdue": "Overdue",
-		"label_loans_overdue": "{count} overdue accounts",
+		"label_loans_overdue": "{count} overdue",
 		"label_loan_tab_for": "Receivable",
-		"label_loan_tab_against": "Payable"
+		"label_loan_tab_against": "Payable",
+		"label_loans_paid": "{count} paid",
+		"label_loan_paid": "Paid"
 	},
 	"todos": {
 		"empty_todos": "Oops! You have no tasks yet ",

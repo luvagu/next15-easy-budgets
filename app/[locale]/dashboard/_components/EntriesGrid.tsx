@@ -19,7 +19,9 @@ import { Button } from '@/components/ui/button'
 import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import {
 	BanknoteArrowDown,
+	BanknoteXIcon,
 	CalendarClockIcon,
+	CircleCheckBigIcon,
 	EllipsisIcon,
 	HandCoinsIcon,
 } from 'lucide-react'
@@ -28,6 +30,8 @@ import {
 	getCardClassNameBgColors,
 	getDueDateStatus,
 	getOverdueLoansCount,
+	getPaidLoansCount,
+	isLoanPaid,
 } from '@/lib/utils'
 import {
 	BudgetsSummary,
@@ -88,6 +92,7 @@ export function EntriesGrid({
 			: entriesData.filter(entry => !entry.isAgainst)
 		: entriesData
 	const overDueEntriesCount = getOverdueLoansCount(filteredEntries)
+	const paidEntriesCount = isLoan ? getPaidLoansCount(filteredEntries) : 0
 
 	return (
 		<div className='flex flex-col gap-4'>
@@ -125,16 +130,30 @@ export function EntriesGrid({
 										locale,
 									)}
 								</CardTitle>
-								{overDueEntriesCount > 0 && (
-									<Badge
-										variant='destructive'
-										className='text-[10px] px-1.5 py-0'
-									>
-										{t('label_loans_overdue', {
-											count: overDueEntriesCount,
-										})}
-									</Badge>
-								)}
+								<div className='flex items-center gap-2'>
+									{overDueEntriesCount > 0 && (
+										<Badge
+											variant='destructive'
+											className='text-[10px] px-1.5 py-0'
+										>
+											<BanknoteXIcon className='h-3 w-3' />
+											{t('label_loans_overdue', {
+												count: overDueEntriesCount,
+											})}
+										</Badge>
+									)}
+									{paidEntriesCount > 0 && (
+										<Badge
+											variant='outline'
+											className='text-[10px] px-1.5 py-0 border-green-600 text-green-600'
+										>
+											<CircleCheckBigIcon className='h-3 w-3' />
+											{t('label_loans_paid', {
+												count: paidEntriesCount,
+											})}
+										</Badge>
+									)}
+								</div>
 							</CardHeader>
 							<CardContent className='p-0 space-y-4'>
 								<div className='grid grid-cols-2 gap-4'>
@@ -251,10 +270,11 @@ function EntryCard({
 	const t = useTranslations('dashboard')
 	const format = useFormatter()
 
-	const { id, name, bgColor, isAgainst, dueDate } = entryData
+	const { id, name, bgColor, dueDate } = entryData
 
 	const isLoan = type === ENTRY_TYPES.LOAN
 	const item = isLoan ? ENTRY_TYPES.INSTALLMENT : ENTRY_TYPES.EXPENSE
+	const isPaid = isLoan && isLoanPaid(entryData)
 
 	const { isOverdue, isDueToday } = getDueDateStatus(dueDate)
 
@@ -319,7 +339,7 @@ function EntryCard({
 						<DeleteEntryAlertDialog type={type} id={id} />
 					</AlertDialog>
 				</div>
-				{isLoan && (
+				{/* {isLoan && (
 					<CardDescription className='flex items-center gap-1.5'>
 						{isAgainst ? (
 							<>
@@ -337,8 +357,18 @@ function EntryCard({
 							</>
 						)}
 					</CardDescription>
-				)}
-				{isLoan && dueDate && (
+				)} */}
+				{isLoan && isPaid ? (
+					<CardDescription className='flex items-center gap-1.5'>
+						<Badge
+							variant='outline'
+							className='text-[10px] px-1.5 py-0 border-green-600 text-green-600'
+						>
+							<CircleCheckBigIcon className='h-3 w-3' />
+							{t('label_loan_paid')}
+						</Badge>
+					</CardDescription>
+				) : isLoan && dueDate ? (
 					<CardDescription
 						className={`flex items-center gap-1.5 ${
 							isOverdue ? 'text-red-600' : isDueToday ? 'text-amber-600' : ''
@@ -360,7 +390,7 @@ function EntryCard({
 							</Badge>
 						)}
 					</CardDescription>
-				)}
+				) : null}
 			</CardHeader>
 			<EntryProgress type={type} entryData={entryData} />
 		</Card>

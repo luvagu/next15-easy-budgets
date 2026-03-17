@@ -152,9 +152,11 @@
 		"label_loan_total_due": "Pendiente",
 		"label_loan_due_date": "Vence: {date}",
 		"label_loan_overdue": "Vencido",
-		"label_loans_overdue": "{count} cuentas vencidas",
+		"label_loans_overdue": "{count} vencidos",
 		"label_loan_tab_for": "Por cobrar",
-		"label_loan_tab_against": "Por pagar"
+		"label_loan_tab_against": "Por pagar",
+		"label_loans_paid": "{count} pagadas",
+		"label_loan_paid": "Pagada"
 	},
 	"todos": {
 		"empty_todos": "¡Ups! Aún no tienes tareas",

@@ -149,6 +149,14 @@ export function getOverdueLoansCount(loans: LoanEntryFields[]) {
 	).length
 }
 
+export function isLoanPaid(loan: { installmensTotal?: number | null; totalDebt?: number | null }) {
+	return (loan.installmensTotal ?? 0) >= (loan.totalDebt ?? 0) && (loan.totalDebt ?? 0) > 0
+}
+
+export function getPaidLoansCount(loans: LoanEntryFields[]) {
+	return loans.filter(isLoanPaid).length
+}
+
 export function getBudgetsSummary(budgets: BudgetEntryFields[]) {
 	return budgets.reduce(
 		(acc, budget) => ({
