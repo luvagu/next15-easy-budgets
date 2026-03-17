@@ -26,6 +26,7 @@ import {
 	HandCoinsIcon,
 } from 'lucide-react'
 import {
+	calculateProgressValue,
 	curencyFormatter,
 	getCardClassNameBgColors,
 	getDueDateStatus,
@@ -93,6 +94,15 @@ export function EntriesGrid({
 		: entriesData
 	const overDueEntriesCount = getOverdueLoansCount(filteredEntries)
 	const paidEntriesCount = isLoan ? getPaidLoansCount(filteredEntries) : 0
+
+	const progressValue = calculateProgressValue(
+		isLoan
+			? (loansSummary?.[loanType]?.grandLoansInstallemtsTotal ?? 0)
+			: (budgetsSummary?.grandBudgetsExpensesTotal ?? 0),
+		isLoan
+			? (loansSummary?.[loanType]?.grandLoansTotalDebt ?? 0)
+			: (budgetsSummary?.grandBudgetsTotalQuota ?? 0),
+	)
 
 	return (
 		<div className='flex flex-col gap-4'>
@@ -181,7 +191,7 @@ export function EntriesGrid({
 									</div>
 								</div>
 								<Progress
-									value={63}
+									value={progressValue}
 									className={`h-3`}
 									indicatorClassName='bg-lime-400'
 								/>
@@ -242,7 +252,7 @@ export function EntriesGrid({
 							</div>
 						</div>
 						<Progress
-							value={63}
+							value={progressValue}
 							className={`h-3`}
 							indicatorClassName='bg-lime-400'
 						/>
