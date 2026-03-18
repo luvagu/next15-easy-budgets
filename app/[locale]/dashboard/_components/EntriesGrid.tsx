@@ -78,22 +78,25 @@ export function EntriesGrid({
 	}
 
 	const isLoan = type === ENTRY_TYPES.LOAN
+
 	const budgetsSummary = !isLoan ? (summary as BudgetsSummary) : null
 	const loansSummary = isLoan ? (summary as LoansSummary) : null
 
-	const forEntriesCount = (
-		isLoan ? entriesData.filter(entry => !entry.isAgainst) : []
-	).length
-	const againstEntriesCount = (
-		isLoan ? entriesData.filter(entry => entry.isAgainst) : []
-	).length
 	const filteredEntries = isLoan
 		? loanType === TABS.AGAINST
 			? entriesData.filter(entry => entry.isAgainst)
 			: entriesData.filter(entry => !entry.isAgainst)
 		: entriesData
-	const overDueEntriesCount = getOverdueLoansCount(filteredEntries)
-	const paidEntriesCount = isLoan ? getPaidLoansCount(filteredEntries) : 0
+
+	const loansForCount = (
+		isLoan ? entriesData.filter(entry => !entry.isAgainst) : []
+	).length
+	const loansAgainstCount = (
+		isLoan ? entriesData.filter(entry => entry.isAgainst) : []
+	).length
+
+	const overdueLoansCount = isLoan ? getOverdueLoansCount(filteredEntries) : 0
+	const paidLoansCount = isLoan ? getPaidLoansCount(filteredEntries) : 0
 
 	const progressValue = calculateProgressValue(
 		isLoan
@@ -117,7 +120,7 @@ export function EntriesGrid({
 									variant={'outline'}
 									className='h-5 min-w-5 rounded-full px-1 font-mono tabular-nums'
 								>
-									{forEntriesCount}
+									{loansForCount}
 								</Badge>
 							</TabsTrigger>
 							<TabsTrigger value={TABS.AGAINST}>
@@ -127,7 +130,7 @@ export function EntriesGrid({
 									variant={'outline'}
 									className='h-5 min-w-5 rounded-full px-1 font-mono tabular-nums'
 								>
-									{againstEntriesCount}
+									{loansAgainstCount}
 								</Badge>
 							</TabsTrigger>
 						</TabsList>
@@ -140,30 +143,32 @@ export function EntriesGrid({
 										locale,
 									)}
 								</CardTitle>
-								<div className='flex items-center gap-2'>
-									{overDueEntriesCount > 0 && (
-										<Badge
-											variant='destructive'
-											className='text-[10px] px-1.5 py-0'
-										>
-											<BanknoteXIcon className='h-3 w-3' />
-											{t('label_loans_overdue', {
-												count: overDueEntriesCount,
-											})}
-										</Badge>
-									)}
-									{paidEntriesCount > 0 && (
-										<Badge
-											variant='outline'
-											className='text-[10px] px-1.5 py-0 border-green-600 text-green-600'
-										>
-											<CircleCheckBigIcon className='h-3 w-3' />
-											{t('label_loans_paid', {
-												count: paidEntriesCount,
-											})}
-										</Badge>
-									)}
-								</div>
+								{(overdueLoansCount || paidLoansCount) && (
+									<div className='flex items-center gap-2'>
+										{overdueLoansCount > 0 && (
+											<Badge
+												variant='destructive'
+												className='text-[10px] px-1.5 py-0'
+											>
+												<BanknoteXIcon className='h-3 w-3' />
+												{t('label_loans_overdue', {
+													count: overdueLoansCount,
+												})}
+											</Badge>
+										)}
+										{paidLoansCount > 0 && (
+											<Badge
+												variant='outline'
+												className='text-[10px] px-1.5 py-0 border-green-600 text-green-600'
+											>
+												<CircleCheckBigIcon className='h-3 w-3' />
+												{t('label_loans_paid', {
+													count: paidLoansCount,
+												})}
+											</Badge>
+										)}
+									</div>
+								)}
 							</CardHeader>
 							<CardContent className='p-0 space-y-4'>
 								<div className='grid grid-cols-2 gap-4'>
@@ -349,25 +354,6 @@ function EntryCard({
 						<DeleteEntryAlertDialog type={type} id={id} />
 					</AlertDialog>
 				</div>
-				{/* {isLoan && (
-					<CardDescription className='flex items-center gap-1.5'>
-						{isAgainst ? (
-							<>
-								<span className='text-sky-700'>
-									{t(`label_loan_is_against_true`)}
-								</span>
-								<BanknoteArrowDown className='h-4 w-4' />
-							</>
-						) : (
-							<>
-								<span className='text-green-700'>
-									{t(`label_loan_is_against_false`)}
-								</span>
-								<HandCoinsIcon className='h-4 w-4' />
-							</>
-						)}
-					</CardDescription>
-				)} */}
 				{isLoan && isPaid ? (
 					<CardDescription className='flex items-center gap-1.5'>
 						<Badge

@@ -140,8 +140,6 @@
 		"label_add_entry_or_item": "Añadir {entryOrItem}",
 		"label_delete": "Borrar",
 		"label_edit": "Editar",
-		"label_loan_is_against_false": "Esta cuenta es \"Por cobrar\"",
-		"label_loan_is_against_true": "Esta cuenta es \"Por pagar\"",
 		"label_view_items": "Ver {items}",
 		"title_no_entries": "No tienes {entries}",
 		"label_budget_grand_total": "Cupo total general",

@@ -143,14 +143,23 @@ export function getDueDateStatus(dueDate: Date | null | undefined) {
 	}
 }
 
-export function getOverdueLoansCount(loans: LoanEntryFields[]) {
-	return loans.filter(
-		loan => loan.dueDate && getDueDateStatus(loan.dueDate).isOverdue
-	).length
+export function isLoanPaid(loan: {
+	installmensTotal?: number | null
+	totalDebt?: number | null
+}) {
+	return (
+		(loan.installmensTotal ?? 0) >= (loan.totalDebt ?? 0) &&
+		(loan.totalDebt ?? 0) > 0
+	)
 }
 
-export function isLoanPaid(loan: { installmensTotal?: number | null; totalDebt?: number | null }) {
-	return (loan.installmensTotal ?? 0) >= (loan.totalDebt ?? 0) && (loan.totalDebt ?? 0) > 0
+export function getOverdueLoansCount(loans: LoanEntryFields[]) {
+	return loans.filter(
+		loan =>
+			!isLoanPaid(loan) &&
+			loan.dueDate &&
+			getDueDateStatus(loan.dueDate).isOverdue,
+	).length
 }
 
 export function getPaidLoansCount(loans: LoanEntryFields[]) {
@@ -188,11 +197,9 @@ export function getLoansSummary(loans: LoanEntryFields[]) {
 	return {
 		for: forLoans.reduce(
 			(acc, loan) => ({
-				grandLoansTotalDebt:
-					acc.grandLoansTotalDebt + (loan.totalDebt ?? 0),
+				grandLoansTotalDebt: acc.grandLoansTotalDebt + (loan.totalDebt ?? 0),
 				grandLoansInstallemtsTotal:
-					acc.grandLoansInstallemtsTotal +
-					(loan.installmensTotal ?? 0),
+					acc.grandLoansInstallemtsTotal + (loan.installmensTotal ?? 0),
 				grandLoansDueAmoutTotal:
 					acc.grandLoansDueAmoutTotal + (loan.dueAmount ?? 0),
 			}),
@@ -200,11 +207,9 @@ export function getLoansSummary(loans: LoanEntryFields[]) {
 		),
 		against: againstLoans.reduce(
 			(acc, loan) => ({
-				grandLoansTotalDebt:
-					acc.grandLoansTotalDebt + (loan.totalDebt ?? 0),
+				grandLoansTotalDebt: acc.grandLoansTotalDebt + (loan.totalDebt ?? 0),
 				grandLoansInstallemtsTotal:
-					acc.grandLoansInstallemtsTotal +
-					(loan.installmensTotal ?? 0),
+					acc.grandLoansInstallemtsTotal + (loan.installmensTotal ?? 0),
 				grandLoansDueAmoutTotal:
 					acc.grandLoansDueAmoutTotal + (loan.dueAmount ?? 0),
 			}),

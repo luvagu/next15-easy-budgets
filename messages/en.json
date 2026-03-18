@@ -140,8 +140,6 @@
 		"label_add_entry_or_item": "Add {entryOrItem}",
 		"label_delete": "Delete",
 		"label_edit": "Edit",
-		"label_loan_is_against_false": "This account is to be collected",
-		"label_loan_is_against_true": "This is a payable account",
 		"label_view_items": "View {items}",
 		"title_no_entries": "You have no {entries}",
 		"label_budget_grand_total": "Grand Total Quota",
