@@ -109,7 +109,7 @@ export function EntriesGrid({
 
 	return (
 		<div className='flex flex-col gap-4'>
-			{isLoan ? (
+			{isLoan && (
 				<Tabs defaultValue={loanType} onValueChange={handleLoanTypeChange}>
 					<Card className='relative overflow-hidden py-4 px-5 shadow-none rounded-md'>
 						<TabsList className='absolute right-0 -top-[1px] p-0 border shadow-none rounded-md rounded-tl-none rounded-br-none border-t-0 border-r-0 overflow-hidden flex-col sm:flex-row h-auto sm:h-9 *:w-full sm:*:w-fit *:shadow-none *:px-3 *:rounded-none *:data-[state=inactive]:inset-shadow-sm *:text-xs sm:*:text-sm'>
@@ -204,66 +204,64 @@ export function EntriesGrid({
 						</TabsContent>
 					</Card>
 				</Tabs>
-			) : (
-				<Card className='py-4 px-5 gap-4 shadow-none rounded-md'>
-					<CardHeader className='p-0'>
-						<CardDescription>
-							{t(
-								isLoan ? 'label_loan_grand_total' : 'label_budget_grand_total',
-							)}
-						</CardDescription>
-						<CardTitle className='text-lg font-semibold tabular-nums sm:text-xl'>
-							{curencyFormatter(
-								(isLoan
-									? loansSummary?.for.grandLoansTotalDebt
-									: budgetsSummary?.grandBudgetsTotalQuota) as number,
-								locale,
-							)}
-						</CardTitle>
-					</CardHeader>
-					<CardContent className='p-0 space-y-4'>
-						<div className='grid grid-cols-2 gap-4'>
-							<div className='flex items-center gap-2 text-sm'>
-								<span className='text-sm'>
-									{t(
-										isLoan
-											? 'label_loan_total_paid'
-											: 'label_budget_total_available',
-									)}
-								</span>
-								<div className='bg-muted rounded-md px-2 py-1 text-center text-sm'>
-									{curencyFormatter(
-										(isLoan
-											? loansSummary?.for.grandLoansInstallemtsTotal
-											: budgetsSummary?.grandBudgetsExpensesTotal) as number,
-										locale,
-									)}
-								</div>
-							</div>
-							<div className='flex items-center justify-end gap-2 text-sm'>
-								<span className='text-sm'>
-									{t(
-										isLoan ? 'label_loan_total_due' : 'label_budget_total_used',
-									)}
-								</span>
-								<div className='bg-muted rounded-md px-2 py-1 text-center text-sm'>
-									{curencyFormatter(
-										(isLoan
-											? loansSummary?.for.grandLoansDueAmoutTotal
-											: budgetsSummary?.grandBudgetsAvailableQuota) as number,
-										locale,
-									)}
-								</div>
+			)}
+
+			<Card className='py-4 px-5 gap-4 shadow-none rounded-md'>
+				<CardHeader className='p-0'>
+					<CardDescription>
+						{t(isLoan ? 'label_loan_grand_total' : 'label_budget_grand_total')}
+					</CardDescription>
+					<CardTitle className='text-lg font-semibold tabular-nums sm:text-xl'>
+						{curencyFormatter(
+							(isLoan
+								? loansSummary?.for.grandLoansTotalDebt
+								: budgetsSummary?.grandBudgetsTotalQuota) as number,
+							locale,
+						)}
+					</CardTitle>
+				</CardHeader>
+				<CardContent className='p-0 space-y-4'>
+					<div className='grid grid-cols-2 gap-4'>
+						<div className='flex items-center gap-2 text-sm'>
+							<span className='text-sm'>
+								{t(
+									isLoan ? 'label_loan_total_paid' : 'label_budget_total_used',
+								)}
+							</span>
+							<div className='bg-muted rounded-md px-2 py-1 text-center text-sm'>
+								{curencyFormatter(
+									(isLoan
+										? loansSummary?.for.grandLoansInstallemtsTotal
+										: budgetsSummary?.grandBudgetsAvailableQuota) as number,
+									locale,
+								)}
 							</div>
 						</div>
-						<Progress
-							value={progressValue}
-							className={`h-3`}
-							indicatorClassName='bg-lime-400'
-						/>
-					</CardContent>
-				</Card>
-			)}
+						<div className='flex items-center justify-end gap-2 text-sm'>
+							<span className='text-sm'>
+								{t(
+									isLoan
+										? 'label_loan_total_due'
+										: 'label_budget_total_available',
+								)}
+							</span>
+							<div className='bg-muted rounded-md px-2 py-1 text-center text-sm'>
+								{curencyFormatter(
+									(isLoan
+										? loansSummary?.for.grandLoansDueAmoutTotal
+										: budgetsSummary?.grandBudgetsExpensesTotal) as number,
+									locale,
+								)}
+							</div>
+						</div>
+					</div>
+					<Progress
+						value={progressValue}
+						className={`h-3`}
+						indicatorClassName='bg-lime-400'
+					/>
+				</CardContent>
+			</Card>
 
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
 				{filteredEntries.map(entry => (
