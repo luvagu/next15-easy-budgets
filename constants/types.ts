@@ -24,6 +24,7 @@ export const ENTRY_TYPES = {
 	INSTALLMENTS: 'installments',
 	INSTALLMENT: 'installment',
 	TODOS: 'todos',
+	INVENTORY: 'inventory',
 } as const
 
 export const TABS = {
@@ -32,6 +33,7 @@ export const TABS = {
 	DETAILS: 'details',
 	ITEMS: 'items',
 	TODOS: 'todos',
+	INVENTORY: ENTRY_TYPES.INVENTORY,
 	FOR: 'for',
 	AGAINST: 'against',
 } as const
@@ -50,7 +52,10 @@ export type FormItemType =
 	| typeof ENTRY_TYPES.EXPENSE
 	| typeof ENTRY_TYPES.INSTALLMENT
 
-export type DashboardTabs = typeof TABS.BUDGETS | typeof TABS.LOANS
+export type DashboardTabs =
+	| typeof TABS.BUDGETS
+	| typeof TABS.LOANS
+	| typeof TABS.INVENTORY
 
 export type EntryTabs = typeof TABS.DETAILS | typeof TABS.ITEMS
 
@@ -66,7 +71,11 @@ export const CACHE_TAGS = {
 	loans: ENTRY_TYPES.LOANS,
 	installments: ENTRY_TYPES.INSTALLMENTS,
 	todos: ENTRY_TYPES.TODOS,
-}
+	inventory: 'inventory',
+	categories: 'categories',
+	invoices: 'invoices',
+	exchangeRates: 'exchange_rates',
+} as const
 
 export type GrigEntryTypes =
 	| typeof ENTRY_TYPES.BUDGET
@@ -129,6 +138,7 @@ export type DashboardPageProps = {
 	budgets: BudgetEntryFields[]
 	loans: LoanEntryFields[]
 	todosLis: TodoEntryFields[]
+	inventoryItemCount: number
 }
 
 export type GridEntriesArray = SharedEntryFields[]

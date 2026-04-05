@@ -8,6 +8,9 @@ import { routing } from '@/i18n/routing'
 import { notFound } from 'next/navigation'
 import { Toaster } from '@/components/ui/sonner'
 
+// ToDo: remove
+// import '@/features/inventory/seed/seed-inventory'
+
 const geistSans = Geist({
 	variable: '--font-geist-sans',
 	subsets: ['latin'],

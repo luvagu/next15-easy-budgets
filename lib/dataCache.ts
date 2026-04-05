@@ -6,6 +6,10 @@ type CACHE_TAG =
 	| typeof ENTRY_TYPES.EXPENSES
 	| typeof ENTRY_TYPES.INSTALLMENTS
 	| 'users'
+	| 'inventory'
+	| 'categories'
+	| 'invoices'
+	| 'exchange_rates'
 
 export function getGlobalTag(tag: CACHE_TAG) {
 	return `global:${tag}` as const

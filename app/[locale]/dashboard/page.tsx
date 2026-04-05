@@ -3,6 +3,7 @@ import { getLoans } from '@/server/db/loans'
 import { auth } from '@clerk/nextjs/server'
 import { getTodos } from '@/server/db/todos'
 import { DashboardPageClient } from './_components/DashboardPageClient'
+import { getItemsCount } from '@/features/inventory/db/items'
 
 export default async function DashboardPage() {
 	const { userId, redirectToSignIn } = await auth()
@@ -11,13 +12,19 @@ export default async function DashboardPage() {
 		return redirectToSignIn()
 	}
 
-	const [budgets, loans, todosLis] = await Promise.all([
+	const [budgets, loans, todosLis, inventoryItemCount] = await Promise.all([
 		getBudgets(userId),
 		getLoans(userId),
 		getTodos(userId),
+		getItemsCount(userId),
 	])
 
 	return (
-		<DashboardPageClient budgets={budgets} loans={loans} todosLis={todosLis} />
+		<DashboardPageClient
+			budgets={budgets}
+			loans={loans}
+			todosLis={todosLis}
+			inventoryItemCount={inventoryItemCount}
+		/>
 	)
 }

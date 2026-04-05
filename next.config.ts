@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
 	/* config options here */
 	typedRoutes: true,
 	experimental: {
-		// useCache: true,
+		useCache: true,
 		// cacheComponents: true,
 		// authInterrupts: true,
 		staleTimes: {

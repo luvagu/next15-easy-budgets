@@ -8,6 +8,13 @@ import { Link } from '@/i18n/navigation'
 import { PlusIcon } from 'lucide-react'
 import { ENTRY_TYPES } from '@/constants/types'
 import { Badge } from '@/components/ui/badge'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select'
 
 export function TabsWithHeader({
 	title,
@@ -46,6 +53,13 @@ export function TabsWithHeader({
 				? ENTRY_TYPES.LOAN
 				: null
 
+	const handleTabChange = (value: string) => {
+		setSelectedTab(value)
+		handleSelectedDashboadTab(value)
+	}
+
+	const selectedTabLabel = tabsList.find(t => t.value === selectedTab)
+
 	return (
 		<>
 			<h1 className='text-2xl sm:text-3xl font-semibold flex items-center justify-between'>
@@ -63,14 +77,9 @@ export function TabsWithHeader({
 					</Button>
 				)}
 			</h1>
-			<Tabs
-				value={selectedTab}
-				onValueChange={selectedTab => {
-					setSelectedTab(selectedTab)
-					handleSelectedDashboadTab(selectedTab)
-				}}
-			>
-				<TabsList>
+			<Tabs value={selectedTab} onValueChange={handleTabChange}>
+				{/* Desktop: horizontal tab bar */}
+				<TabsList className='hidden sm:flex'>
 					{tabsList.map(tab => (
 						<Fragment key={tab.value}>
 							<TabsTrigger value={tab.value}>
@@ -85,6 +94,27 @@ export function TabsWithHeader({
 						</Fragment>
 					))}
 				</TabsList>
+
+				{/* Mobile: select dropdown */}
+				<div className='sm:hidden'>
+					<Select value={selectedTab} onValueChange={handleTabChange}>
+						<SelectTrigger className='w-full'>
+							<SelectValue>
+								{selectedTabLabel
+									? `${selectedTabLabel.name} (${selectedTabLabel.badge})`
+									: selectedTab}
+							</SelectValue>
+						</SelectTrigger>
+						<SelectContent>
+							{tabsList.map(tab => (
+								<SelectItem key={tab.value} value={tab.value}>
+									{tab.name} ({tab.badge})
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+
 				{tabsContent.map(tab => (
 					<TabsContent key={tab.value} value={tab.value}>
 						{tab.content}

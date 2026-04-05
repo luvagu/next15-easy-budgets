@@ -16,11 +16,13 @@ import {
 } from '@/constants/types'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { getBudgetsSummary, getLoansSummary } from '@/lib/utils'
+import { InventoryTab } from '@/features/inventory/components/InventoryTab'
 
 export function DashboardPageClient({
 	budgets,
 	loans,
 	todosLis,
+	inventoryItemCount,
 }: DashboardPageProps) {
 	const commonT = useTranslations('common')
 	const dashboardT = useTranslations('dashboard')
@@ -67,6 +69,11 @@ export function DashboardPageClient({
 				name: commonT('label_todos'),
 				badge: todosLis.length ?? 0,
 			},
+			{
+				value: TABS.INVENTORY,
+				name: commonT('label_inventory'),
+				badge: inventoryItemCount ?? 0,
+			},
 		],
 		tabsContent: [
 			{
@@ -100,6 +107,12 @@ export function DashboardPageClient({
 			{
 				value: TABS.TODOS,
 				content: <TodosClient todosLis={todosLis} />,
+			},
+			{
+				value: TABS.INVENTORY,
+				content: (
+					<InventoryTab />
+				),
 			},
 		],
 	}
