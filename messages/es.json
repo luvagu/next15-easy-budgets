@@ -232,7 +232,7 @@
 		"label_credit_sale": "¿Es una Venta a Crédito?",
 		"label_due_date": "Fecha de Vencimiento (Préstamo)",
 		"label_due_date_optional": "Opcional",
-		"label_due_date_hint": "Establecer una fecha de vencimiento crea un Préstamo para esta venta.",
+		"label_due_date_hint": "Establece una fecha de vencimiento y crea un Préstamo (Por cobrar) para esta venta.",
 		"label_subtotal": "Subtotal",
 		"label_delivery": "Envío",
 		"label_total": "Total",

@@ -232,7 +232,7 @@
 		"label_credit_sale": "Is this a Credit Sale?",
 		"label_due_date": "Due Date (Loan)",
 		"label_due_date_optional": "Optional",
-		"label_due_date_hint": "Setting a due date creates a Loan entry for this sale.",
+		"label_due_date_hint": "Set a due date and create a Loan (For) entry for this sale.",
 		"label_subtotal": "Subtotal",
 		"label_delivery": "Delivery",
 		"label_total": "Total",
