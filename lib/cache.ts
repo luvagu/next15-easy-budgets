@@ -28,7 +28,7 @@ export function getParentItemsTag(
 }
 
 export function clearFullCache() {
-	revalidateTag('*')
+	revalidateTag('*', 'max')
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,17 +50,17 @@ export function revalidateDbCache({
 	id?: string
 	parentId?: string
 }) {
-	revalidateTag(getGlobalTag(tag))
+	revalidateTag(getGlobalTag(tag), 'max')
 
 	if (userId != null) {
-		revalidateTag(getUserTag(userId, tag))
+		revalidateTag(getUserTag(userId, tag), 'max')
 	}
 
 	if (id != null) {
-		revalidateTag(getIdTag(id, tag))
+		revalidateTag(getIdTag(id, tag), 'max')
 	}
 
 	if (parentId != null) {
-		revalidateTag(getParentItemsTag(parentId, tag))
+		revalidateTag(getParentItemsTag(parentId, tag), 'max')
 	}
 }

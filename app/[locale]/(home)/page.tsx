@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { SignedOut, SignUpButton } from '@clerk/nextjs'
+import { Show, SignUpButton } from '@clerk/nextjs'
 import { ArrowRightIcon } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 
@@ -14,14 +14,14 @@ export default async function HomeLayoutPage() {
 			<p className='text-lg lg:text-3xl max-w-screen-xl'>
 				{t('hero_welcome_message')}
 			</p>
-			<SignedOut>
+			<Show when='signed-out'>
 				<SignUpButton>
 					<Button className='group text-lg p-6 rounded-xl flex gap-2 cursor-pointer'>
 						{t('label_get_started_free')}{' '}
 						<ArrowRightIcon className='size-5 group-hover:translate-x-1 transition-transform' />
 					</Button>
 				</SignUpButton>
-			</SignedOut>
+			</Show>
 		</section>
 	)
 }

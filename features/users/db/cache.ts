@@ -10,6 +10,6 @@ export function getUserIdTag(id: string) {
 }
 
 export function revalidateUsersCache(id: string) {
-	revalidateTag(getUsersGlobalTag())
-	revalidateTag(getUserIdTag(id))
+	revalidateTag(getUsersGlobalTag(), 'max')
+	revalidateTag(getUserIdTag(id), 'max')
 }

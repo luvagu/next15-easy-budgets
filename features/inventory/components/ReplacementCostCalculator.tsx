@@ -65,6 +65,7 @@ export function ReplacementCostCalculator({
 	)
 
 	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setUsdAmount(defaultUsdAmount && defaultUsdAmount > 0 ? defaultUsdAmount : 100)
 	}, [defaultUsdAmount])
 	const [rates, setRates] = useState<LiveRates | null>(null)
@@ -74,6 +75,7 @@ export function ReplacementCostCalculator({
 
 	useEffect(() => {
 		if (!open) return
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setIsLoading(true)
 		setApiError(false)
 

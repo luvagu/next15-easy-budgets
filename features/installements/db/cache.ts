@@ -21,7 +21,7 @@ export function revalidateInstallmentsCache({
 	id: string
 	parentId: string
 }) {
-	revalidateTag(getInstallmentsGlobalTag())
-	revalidateTag(getInstallmentIdTag(id))
-	revalidateTag(getLoanInstallmentsTag(parentId))
+	revalidateTag(getInstallmentsGlobalTag(), 'max')
+	revalidateTag(getInstallmentIdTag(id), 'max')
+	revalidateTag(getLoanInstallmentsTag(parentId), 'max')
 }

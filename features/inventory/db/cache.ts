@@ -27,9 +27,9 @@ export function revalidateInventoryCache({
 	id?: string
 	userId: string
 }) {
-	revalidateTag(getInventoryGlobalTag())
-	revalidateTag(getUserInventoryTag(userId))
-	if (id) revalidateTag(getInventoryItemIdTag(id))
+	revalidateTag(getInventoryGlobalTag(), 'max')
+	revalidateTag(getUserInventoryTag(userId), 'max')
+	if (id) revalidateTag(getInventoryItemIdTag(id), 'max')
 }
 
 // ─── Categories ─────────────────────────────────────
@@ -43,8 +43,8 @@ export function getUserCategoriesTag(userId: string) {
 }
 
 export function revalidateCategoriesCache({ userId }: { userId: string }) {
-	revalidateTag(getCategoriesGlobalTag())
-	revalidateTag(getUserCategoriesTag(userId))
+	revalidateTag(getCategoriesGlobalTag(), 'max')
+	revalidateTag(getUserCategoriesTag(userId), 'max')
 }
 
 // ─── Invoices ───────────────────────────────────────
@@ -68,9 +68,9 @@ export function revalidateInvoicesCache({
 	id: string
 	userId: string
 }) {
-	revalidateTag(getInvoicesGlobalTag())
-	revalidateTag(getInvoiceIdTag(id))
-	revalidateTag(getUserInvoicesTag(userId))
+	revalidateTag(getInvoicesGlobalTag(), 'max')
+	revalidateTag(getInvoiceIdTag(id), 'max')
+	revalidateTag(getUserInvoicesTag(userId), 'max')
 }
 
 // ─── Exchange Rates (Global — no userId) ────────────
@@ -80,5 +80,5 @@ export function getExchangeRatesGlobalTag() {
 }
 
 export function revalidateExchangeRatesCache() {
-	revalidateTag(getExchangeRatesGlobalTag())
+	revalidateTag(getExchangeRatesGlobalTag(), 'max')
 }

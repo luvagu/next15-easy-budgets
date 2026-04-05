@@ -21,7 +21,7 @@ export function revalidateExpensesCache({
 	id: string
 	parentId: string
 }) {
-	revalidateTag(getExpensesGlobalTag())
-	revalidateTag(getExpenseIdTag(id))
-	revalidateTag(getBudgetExpensesTag(parentId))
+	revalidateTag(getExpensesGlobalTag(), 'max')
+	revalidateTag(getExpenseIdTag(id), 'max')
+	revalidateTag(getBudgetExpensesTag(parentId), 'max')
 }

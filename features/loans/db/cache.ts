@@ -21,7 +21,7 @@ export function revalidateLoansCache({
 	id: string
 	userId: string
 }) {
-	revalidateTag(getLoansGlobalTag())
-	revalidateTag(getLoanIdTag(id))
-	revalidateTag(getUserLoansTag(userId))
+	revalidateTag(getLoansGlobalTag(), 'max')
+	revalidateTag(getLoanIdTag(id), 'max')
+	revalidateTag(getUserLoansTag(userId), 'max')
 }

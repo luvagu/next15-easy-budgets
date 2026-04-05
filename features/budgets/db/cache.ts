@@ -21,7 +21,7 @@ export function revalidateBudgetsCache({
 	id: string
 	userId: string
 }) {
-	revalidateTag(getBudgetsGlobalTag())
-	revalidateTag(getBudgetIdTag(id))
-	revalidateTag(getUserBudgetsTag(userId))
+	revalidateTag(getBudgetsGlobalTag(), 'max')
+	revalidateTag(getBudgetIdTag(id), 'max')
+	revalidateTag(getUserBudgetsTag(userId), 'max')
 }

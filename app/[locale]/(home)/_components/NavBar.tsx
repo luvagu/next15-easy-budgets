@@ -1,6 +1,6 @@
 import { BrandLogo } from '@/components/BrandLogo'
 import { Link } from '@/i18n/navigation'
-import { SignInButton, SignedIn, SignedOut } from '@clerk/nextjs'
+import { Show, SignInButton } from '@clerk/nextjs'
 import { getTranslations } from 'next-intl/server'
 
 export async function NavBar() {
@@ -13,16 +13,16 @@ export async function NavBar() {
 					<BrandLogo />
 				</Link>
 				<span className='text-lg'>
-					<SignedOut>
+					<Show when='signed-out'>
 						<SignInButton>
 							<button className='cursor-pointer'>{t('label_login')}</button>
 						</SignInButton>
-					</SignedOut>
-					<SignedIn>
+					</Show>
+					<Show when='signed-in'>
 						<Link href={'/dashboard'} className='mr-auto'>
 							{t('label_dashboard')}
 						</Link>
-					</SignedIn>
+					</Show>
 				</span>
 			</nav>
 		</header>
