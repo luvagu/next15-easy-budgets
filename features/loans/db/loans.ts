@@ -3,15 +3,14 @@ import { InstallmentsTable, LoansTable } from '@/drizzle/schema'
 import { and, eq, sum } from 'drizzle-orm'
 import {
 	getLoanIdTag,
+	getLoanInstallmentsTag,
 	getLoansGlobalTag,
 	getUserLoansTag,
+	revalidateInstallmentsCache,
 	revalidateLoansCache,
 } from './cache'
-import {
-	getLoanInstallmentsTag,
-	revalidateInstallmentsCache,
-} from '@/features/installements/db/cache'
-import { cacheTag } from 'next/dist/server/use-cache/cache-tag'
+import { cacheTag } from 'next/cache'
+import { BatchItem } from 'drizzle-orm/batch'
 
 export async function createLoan(data: typeof LoansTable.$inferInsert) {
 	const [newLoan] = await db
@@ -81,6 +80,7 @@ export async function getLoan({ id, userId }: { id: string; userId: string }) {
 			totalDebt: true,
 			installmensTotal: true,
 			dueAmount: true,
+			dueDate: true,
 			isAgainst: true,
 		},
 		where: ({ clerkUserId, id: loanId }, { and, eq }) =>
@@ -111,9 +111,190 @@ export async function getLoans(
 
 	return await db.query.LoansTable.findMany({
 		where: ({ clerkUserId }, { eq }) => eq(clerkUserId, userId),
-		orderBy: ({ createdAt }, { desc }) => desc(createdAt),
+		orderBy: ({ updatedAt }, { desc }) => desc(updatedAt),
 		limit,
 	})
+}
+
+export async function createInstallment(
+	data: typeof InstallmentsTable.$inferInsert,
+	{ userId }: { userId: string }
+) {
+	const loan = await getLoan({ id: data.parentId, userId })
+
+	if (loan == null) return null
+
+	const [newInstallment] = await db
+		.insert(InstallmentsTable)
+		.values(data)
+		.returning({
+			id: InstallmentsTable.id,
+			parentId: InstallmentsTable.parentId,
+		})
+
+	if (newInstallment != null) {
+		revalidateInstallmentsCache({
+			id: newInstallment.id,
+			parentId: newInstallment.parentId,
+		})
+
+		await recalculateLoanTotals({
+			parentId: newInstallment.parentId,
+			userId,
+			installmenId: newInstallment.id,
+		})
+	}
+}
+
+export async function deleteInstallment({
+	id,
+	parentId,
+	userId,
+}: {
+	id: string
+	parentId: string
+	userId: string
+}) {
+	const loan = await getLoan({ id: parentId, userId })
+
+	if (loan == null) return false
+
+	const { rowCount } = await db
+		.delete(InstallmentsTable)
+		.where(
+			and(
+				eq(InstallmentsTable.id, id),
+				eq(InstallmentsTable.parentId, parentId)
+			)
+		)
+
+	const isDeleted = rowCount > 0
+
+	if (isDeleted) {
+		revalidateInstallmentsCache({ id, parentId })
+
+		await recalculateLoanTotals({
+			parentId,
+			userId,
+		})
+	}
+
+	return isDeleted
+}
+
+export async function updateLoanInstallments(
+	installments: (typeof InstallmentsTable.$inferInsert)[],
+	{ parentId, userId }: { parentId: string; userId: string }
+) {
+	const loan = await getLoan({ id: parentId, userId })
+
+	if (loan == null) return false
+
+	const statements: BatchItem<'pg'>[] = []
+
+	if (installments.length > 0) {
+		installments.forEach(installment => {
+			if (installment.id != null) {
+				statements.push(
+					db
+						.update(InstallmentsTable)
+						.set(installment)
+						.where(
+							and(
+								eq(InstallmentsTable.id, installment.id),
+								eq(InstallmentsTable.parentId, parentId)
+							)
+						)
+				)
+			}
+		})
+	}
+
+	if (statements.length > 0) {
+		const rowCount = await db.batch(statements as [BatchItem<'pg'>])
+		const isSuccess = rowCount.length > 0
+
+		if (isSuccess) {
+			installments.forEach(installment => {
+				revalidateInstallmentsCache({
+					id: installment.id!,
+					parentId,
+				})
+			})
+
+			await recalculateLoanTotals({
+				parentId,
+				userId,
+			})
+		}
+
+		return isSuccess
+	}
+
+	return false
+}
+
+export async function moveLoanInstallments({
+	oldParentId,
+	newParentId,
+	installments,
+	userId,
+}: {
+	installments: Partial<typeof InstallmentsTable.$inferInsert>[]
+	oldParentId: string
+	newParentId: string
+	userId: string
+}) {
+	const oldLoan = await getLoan({ id: oldParentId, userId })
+	const newLoan = await getLoan({ id: newParentId, userId })
+
+	if (!oldLoan || !newLoan) return false
+
+	const statements: BatchItem<'pg'>[] = []
+
+	installments.forEach(installment => {
+		if (installment.id != null) {
+			statements.push(
+				db
+					.update(InstallmentsTable)
+					.set({ ...installment, parentId: newParentId })
+					.where(
+						and(
+							eq(InstallmentsTable.id, installment.id),
+							eq(InstallmentsTable.parentId, oldParentId)
+						)
+					)
+			)
+		}
+	})
+
+	if (statements.length > 0) {
+		const rowCount = await db.batch(statements as [BatchItem<'pg'>])
+		const isSuccess = rowCount.length > 0
+
+		if (isSuccess) {
+			installments.forEach(installment => {
+				revalidateInstallmentsCache({
+					id: installment.id!,
+					parentId: newParentId,
+				})
+			})
+
+			await recalculateLoanTotals({
+				parentId: oldParentId,
+				userId,
+			})
+
+			await recalculateLoanTotals({
+				parentId: newParentId,
+				userId,
+			})
+		}
+
+		return isSuccess
+	}
+
+	return false
 }
 
 export async function recalculateLoanTotals({

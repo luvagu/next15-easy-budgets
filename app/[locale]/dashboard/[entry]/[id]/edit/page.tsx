@@ -27,8 +27,8 @@ import { Button } from '@/components/ui/button'
 import { Link } from '@/i18n/navigation'
 import { MessageSquareWarningIcon, PlusIcon } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { getBudget, getBudgets } from '@/server/db/budgets'
-import { getLoan, getLoans } from '@/server/db/loans'
+import { getBudget, getBudgets } from '@/features/budgets/db/budgets'
+import { getLoan, getLoans } from '@/features/loans/db/loans'
 import { Badge } from '@/components/ui/badge'
 
 export default async function EditEntryPage({

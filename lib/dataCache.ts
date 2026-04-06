@@ -1,10 +1,12 @@
 import { ENTRY_TYPES } from '@/constants/types'
+import { updateTag } from 'next/cache'
 
 type CACHE_TAG =
 	| typeof ENTRY_TYPES.BUDGETS
 	| typeof ENTRY_TYPES.LOANS
 	| typeof ENTRY_TYPES.EXPENSES
 	| typeof ENTRY_TYPES.INSTALLMENTS
+	| typeof ENTRY_TYPES.TODOS
 	| 'users'
 	| 'inventory'
 	| 'categories'
@@ -25,4 +27,8 @@ export function getIdTag(tag: CACHE_TAG, id: string) {
 
 export function getItemsTag(tag: CACHE_TAG, parentId: string) {
 	return `items:${parentId}-${tag}` as const
+}
+
+export function clearFullCache() {
+	updateTag('*')
 }

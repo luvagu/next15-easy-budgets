@@ -123,7 +123,7 @@
 		"label_installment": "{count, plural, one {Cuota} other {Cuotas}}",
 		"label_loan": "{count, plural, one {Préstamo} other {Préstamos}}",
 		"label_save": "Guardar",
-		"label_todos": "Lista de tareas",
+		"label_todos": "Tareas",
 		"label_inventory": "Inventario"
 	},
 	"home": {

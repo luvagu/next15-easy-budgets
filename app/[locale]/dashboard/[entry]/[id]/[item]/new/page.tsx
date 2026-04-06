@@ -14,8 +14,8 @@ import {
 } from '@/constants/types'
 import { PageWithBackButton } from '@/app/[locale]/dashboard/_components/PageWithBackButton'
 import { EntryItemForm } from '@/app/[locale]/dashboard/_components/forms/EntryItemForm'
-import { getBudget } from '@/server/db/budgets'
-import { getLoan } from '@/server/db/loans'
+import { getBudget } from '@/features/budgets/db/budgets'
+import { getLoan } from '@/features/loans/db/loans'
 import { auth } from '@clerk/nextjs/server'
 
 export default async function NewEntryItemPage({

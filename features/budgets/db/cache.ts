@@ -1,6 +1,8 @@
 import { ENTRY_TYPES } from '@/constants/types'
-import { getGlobalTag, getIdTag, getUserTag } from '@/lib/dataCache'
-import { revalidateTag } from 'next/cache'
+import { getGlobalTag, getIdTag, getItemsTag, getUserTag } from '@/lib/dataCache'
+import { updateTag } from 'next/cache'
+
+// ─── Budgets ─────────────────────────────────────────
 
 export function getBudgetsGlobalTag() {
 	return getGlobalTag(ENTRY_TYPES.BUDGETS)
@@ -21,7 +23,33 @@ export function revalidateBudgetsCache({
 	id: string
 	userId: string
 }) {
-	revalidateTag(getBudgetsGlobalTag(), 'max')
-	revalidateTag(getBudgetIdTag(id), 'max')
-	revalidateTag(getUserBudgetsTag(userId), 'max')
+	updateTag(getBudgetsGlobalTag())
+	updateTag(getBudgetIdTag(id))
+	updateTag(getUserBudgetsTag(userId))
+}
+
+// ─── Expenses ────────────────────────────────────────
+
+export function getExpensesGlobalTag() {
+	return getGlobalTag(ENTRY_TYPES.EXPENSES)
+}
+
+export function getExpenseIdTag(id: string) {
+	return getIdTag(ENTRY_TYPES.EXPENSES, id)
+}
+
+export function getBudgetExpensesTag(parentId: string) {
+	return getItemsTag(ENTRY_TYPES.EXPENSES, parentId)
+}
+
+export function revalidateExpensesCache({
+	id,
+	parentId,
+}: {
+	id: string
+	parentId: string
+}) {
+	updateTag(getExpensesGlobalTag())
+	updateTag(getExpenseIdTag(id))
+	updateTag(getBudgetExpensesTag(parentId))
 }

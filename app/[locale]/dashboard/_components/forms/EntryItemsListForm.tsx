@@ -23,8 +23,8 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import {
 	updateBudgetExpenses,
-	updateLoanInstallments,
-} from '@/server/actions/entries'
+} from '@/features/budgets/actions/budgets'
+import { updateLoanInstallments } from '@/features/loans/actions/loans'
 import { Checkbox } from '@/components/ui/checkbox'
 import { MoveEntryItems } from './MoveEntryItems'
 import { normalizeEntryName } from '@/lib/utils'

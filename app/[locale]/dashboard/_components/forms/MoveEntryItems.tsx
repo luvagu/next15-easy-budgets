@@ -47,8 +47,8 @@ import { ENTRY_TYPES, MoveEntryItemsForm } from '@/constants/types'
 import { getMoveItemsSchema } from '@/schemas/entries'
 import {
 	moveBudgetExpenses,
-	moveLoanInstallments,
-} from '@/server/actions/entries'
+} from '@/features/budgets/actions/budgets'
+import { moveLoanInstallments } from '@/features/loans/actions/loans'
 
 export function MoveEntryItems({
 	open,

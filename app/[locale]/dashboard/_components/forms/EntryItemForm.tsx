@@ -18,7 +18,8 @@ import { toast } from 'sonner'
 import { normalizeEntryName } from '@/lib/utils'
 import { ENTRY_TYPES, CreateEntryItem } from '@/constants/types'
 import { getEntryItemSchema } from '@/schemas/entries'
-import { createExpense, createInstallment } from '@/server/actions/entries'
+import { createExpense } from '@/features/budgets/actions/budgets'
+import { createInstallment } from '@/features/loans/actions/loans'
 
 export function EntryItemForm({ parentId, entryItem }: CreateEntryItem) {
 	const t = useTranslations('forms')

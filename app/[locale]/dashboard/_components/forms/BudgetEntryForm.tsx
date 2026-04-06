@@ -19,7 +19,7 @@ import { toast } from 'sonner'
 import { CardBgColorsRG } from './CardBgColorsRG'
 import { normalizeEntryName } from '@/lib/utils'
 import { UpdateBudgetEntry } from '@/constants/types'
-import { createBudget, updateBudget } from '@/server/actions/entries'
+import { createBudget, updateBudget } from '@/features/budgets/actions/budgets'
 import { useEffect } from 'react'
 
 export function BudgetEntryForm({ budget }: UpdateBudgetEntry) {

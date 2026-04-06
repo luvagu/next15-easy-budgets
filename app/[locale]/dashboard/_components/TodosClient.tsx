@@ -30,7 +30,7 @@ import {
 import { Field, FieldGroup } from '@/components/ui/field'
 import { toast } from 'sonner'
 import { getAddTodoSchema } from '@/schemas/entries'
-import { createTodo, deleteTodo, updateTodo } from '@/server/actions/todos'
+import { createTodo, deleteTodo, updateTodo } from '@/features/todos/actions/todos'
 import { normalizeEntryName } from '@/lib/utils'
 import { Spinner } from '@/components/ui/spinner'
 import {

@@ -21,7 +21,7 @@ import { toast } from 'sonner'
 import { CardBgColorsRG } from './CardBgColorsRG'
 import { normalizeEntryName } from '@/lib/utils'
 import { UpdateLoanEntry } from '@/constants/types'
-import { createLoan, updateLoan } from '@/server/actions/entries'
+import { createLoan, updateLoan } from '@/features/loans/actions/loans'
 import { useEffect } from 'react'
 
 export function LoanEntryForm({ loan }: UpdateLoanEntry) {

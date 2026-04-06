@@ -1,6 +1,8 @@
 import { ENTRY_TYPES } from '@/constants/types'
-import { getGlobalTag, getIdTag, getUserTag } from '@/lib/dataCache'
-import { revalidateTag } from 'next/cache'
+import { getGlobalTag, getIdTag, getItemsTag, getUserTag } from '@/lib/dataCache'
+import { updateTag } from 'next/cache'
+
+// ─── Loans ───────────────────────────────────────────
 
 export function getLoansGlobalTag() {
 	return getGlobalTag(ENTRY_TYPES.LOANS)
@@ -21,7 +23,33 @@ export function revalidateLoansCache({
 	id: string
 	userId: string
 }) {
-	revalidateTag(getLoansGlobalTag(), 'max')
-	revalidateTag(getLoanIdTag(id), 'max')
-	revalidateTag(getUserLoansTag(userId), 'max')
+	updateTag(getLoansGlobalTag())
+	updateTag(getLoanIdTag(id))
+	updateTag(getUserLoansTag(userId))
+}
+
+// ─── Installments ────────────────────────────────────
+
+export function getInstallmentsGlobalTag() {
+	return getGlobalTag(ENTRY_TYPES.INSTALLMENTS)
+}
+
+export function getInstallmentIdTag(id: string) {
+	return getIdTag(ENTRY_TYPES.INSTALLMENTS, id)
+}
+
+export function getLoanInstallmentsTag(parentId: string) {
+	return getItemsTag(ENTRY_TYPES.INSTALLMENTS, parentId)
+}
+
+export function revalidateInstallmentsCache({
+	id,
+	parentId,
+}: {
+	id: string
+	parentId: string
+}) {
+	updateTag(getInstallmentsGlobalTag())
+	updateTag(getInstallmentIdTag(id))
+	updateTag(getLoanInstallmentsTag(parentId))
 }

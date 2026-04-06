@@ -1,17 +1,16 @@
 import { db } from '@/drizzle/db'
 import { BudgetsTable, ExpensesTable } from '@/drizzle/schema'
 import { and, eq, sum } from 'drizzle-orm'
-import { cacheTag } from 'next/dist/server/use-cache/cache-tag'
+import { cacheTag } from 'next/cache'
 import {
 	getBudgetExpensesTag,
-	revalidateExpensesCache,
-} from '@/features/expenses/db/cache'
-import {
 	getBudgetIdTag,
 	getBudgetsGlobalTag,
 	getUserBudgetsTag,
 	revalidateBudgetsCache,
+	revalidateExpensesCache,
 } from './cache'
+import { BatchItem } from 'drizzle-orm/batch'
 
 export async function createBudget(data: typeof BudgetsTable.$inferInsert) {
 	const [newBudget] = await db
@@ -113,9 +112,182 @@ export async function getBudgets(
 
 	return await db.query.BudgetsTable.findMany({
 		where: ({ clerkUserId }, { eq }) => eq(clerkUserId, userId),
-		orderBy: ({ createdAt }, { desc }) => desc(createdAt),
+		orderBy: ({ updatedAt }, { desc }) => desc(updatedAt),
 		limit,
 	})
+}
+
+export async function createExpense(
+	data: typeof ExpensesTable.$inferInsert,
+	{ userId }: { userId: string }
+) {
+	const budget = await getBudget({ id: data.parentId, userId })
+
+	if (budget == null) return null
+
+	const [newExpense] = await db
+		.insert(ExpensesTable)
+		.values(data)
+		.returning({ id: ExpensesTable.id, parentId: ExpensesTable.parentId })
+
+	if (newExpense != null) {
+		revalidateExpensesCache({
+			id: newExpense.id,
+			parentId: newExpense.parentId,
+		})
+
+		await recalculateBudgetTotals({
+			parentId: newExpense.parentId,
+			userId,
+			expenseId: newExpense.id,
+		})
+	}
+}
+
+export async function deleteExpense({
+	id,
+	parentId,
+	userId,
+}: {
+	id: string
+	parentId: string
+	userId: string
+}) {
+	const budget = await getBudget({ id: parentId, userId })
+
+	if (budget == null) return false
+
+	const { rowCount } = await db
+		.delete(ExpensesTable)
+		.where(and(eq(ExpensesTable.id, id), eq(ExpensesTable.parentId, parentId)))
+
+	const isDeleted = rowCount > 0
+
+	if (isDeleted) {
+		revalidateExpensesCache({ id, parentId })
+
+		await recalculateBudgetTotals({
+			parentId,
+			userId,
+		})
+	}
+
+	return isDeleted
+}
+
+export async function updateBudgetExpenses(
+	expenses: Partial<typeof ExpensesTable.$inferInsert>[],
+	{ parentId, userId }: { parentId: string; userId: string }
+) {
+	const budget = await getBudget({ id: parentId, userId })
+
+	if (budget == null) return false
+
+	const statements: BatchItem<'pg'>[] = []
+
+	if (expenses.length > 0) {
+		expenses.forEach(expense => {
+			if (expense.id != null) {
+				statements.push(
+					db
+						.update(ExpensesTable)
+						.set(expense)
+						.where(
+							and(
+								eq(ExpensesTable.id, expense.id),
+								eq(ExpensesTable.parentId, parentId)
+							)
+						)
+				)
+			}
+		})
+	}
+
+	if (statements.length > 0) {
+		const rowCount = await db.batch(statements as [BatchItem<'pg'>])
+		const isSuccess = rowCount.length > 0
+
+		if (isSuccess) {
+			expenses.forEach(expense => {
+				revalidateExpensesCache({
+					id: expense.id!,
+					parentId,
+				})
+			})
+
+			await recalculateBudgetTotals({
+				parentId,
+				userId,
+			})
+		}
+
+		return isSuccess
+	}
+
+	return false
+}
+
+export async function moveBudgetExpenses({
+	oldParentId,
+	newParentId,
+	expenses,
+	userId,
+}: {
+	expenses: Partial<typeof ExpensesTable.$inferInsert>[]
+	oldParentId: string
+	newParentId: string
+	userId: string
+}) {
+	const oldBudget = await getBudget({ id: oldParentId, userId })
+	const newBudget = await getBudget({ id: newParentId, userId })
+
+	if (!oldBudget || !newBudget) return false
+
+	const statements: BatchItem<'pg'>[] = []
+
+	expenses.forEach(expense => {
+		if (expense.id != null) {
+			statements.push(
+				db
+					.update(ExpensesTable)
+					.set({ ...expense, parentId: newParentId })
+					.where(
+						and(
+							eq(ExpensesTable.id, expense.id),
+							eq(ExpensesTable.parentId, oldParentId)
+						)
+					)
+			)
+		}
+	})
+
+	if (statements.length > 0) {
+		const rowCount = await db.batch(statements as [BatchItem<'pg'>])
+		const isSuccess = rowCount.length > 0
+
+		if (isSuccess) {
+			expenses.forEach(expense => {
+				revalidateExpensesCache({
+					id: expense.id!,
+					parentId: newParentId,
+				})
+			})
+
+			await recalculateBudgetTotals({
+				parentId: oldParentId,
+				userId,
+			})
+
+			await recalculateBudgetTotals({
+				parentId: newParentId,
+				userId,
+			})
+		}
+
+		return isSuccess
+	}
+
+	return false
 }
 
 export async function recalculateBudgetTotals({

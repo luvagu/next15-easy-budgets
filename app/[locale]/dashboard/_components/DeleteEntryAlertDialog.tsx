@@ -16,9 +16,8 @@ import { useTranslations } from 'next-intl'
 import {
 	deleteBudget,
 	deleteExpense,
-	deleteInstallment,
-	deleteLoan,
-} from '@/server/actions/entries'
+} from '@/features/budgets/actions/budgets'
+import { deleteLoan, deleteInstallment } from '@/features/loans/actions/loans'
 
 export function DeleteEntryAlertDialog({
 	type,

@@ -1,8 +1,12 @@
-import { CACHE_TAGS } from '@/constants/types'
 import { db } from '@/drizzle/db'
 import { TodosTable } from '@/drizzle/schema/todos'
-import { dbCache, getUserTag, revalidateDbCache } from '@/lib/cache'
 import { and, eq } from 'drizzle-orm'
+import { cacheTag } from 'next/cache'
+import {
+	getTodosGlobalTag,
+	getUserTodosTag,
+	revalidateTodosCache,
+} from './cache'
 
 export async function createTodo(data: typeof TodosTable.$inferInsert) {
 	const [newTodo] = await db
@@ -10,18 +14,14 @@ export async function createTodo(data: typeof TodosTable.$inferInsert) {
 		.values(data)
 		.returning({ id: TodosTable.id, userId: TodosTable.clerkUserId })
 
-	revalidateDbCache({
-		tag: CACHE_TAGS.todos,
-		id: newTodo.id,
-		userId: newTodo.userId,
-	})
+	revalidateTodosCache({ id: newTodo.id, userId: newTodo.userId })
 
 	return newTodo
 }
 
 export async function updateTodo(
 	data: Partial<typeof TodosTable.$inferInsert>,
-	{ id, userId }: { id: string; userId: string }
+	{ id, userId }: { id: string; userId: string },
 ) {
 	const { rowCount } = await db
 		.update(TodosTable)
@@ -31,11 +31,7 @@ export async function updateTodo(
 	const isSuccess = rowCount > 0
 
 	if (isSuccess) {
-		revalidateDbCache({
-			tag: CACHE_TAGS.todos,
-			id,
-			userId,
-		})
+		revalidateTodosCache({ id, userId })
 	}
 
 	return isSuccess
@@ -55,11 +51,7 @@ export async function deleteTodo({
 	const isDeleted = rowCount > 0
 
 	if (isDeleted) {
-		revalidateDbCache({
-			tag: CACHE_TAGS.todos,
-			id,
-			userId,
-		})
+		revalidateTodosCache({ id, userId })
 	}
 
 	return isDeleted
@@ -67,19 +59,12 @@ export async function deleteTodo({
 
 export async function getTodos(
 	userId: string,
-	{ limit }: { limit?: number } = {}
+	{ limit }: { limit?: number } = {},
 ) {
-	const cacheFn = dbCache(getTodosInternal, {
-		tags: [getUserTag(userId, CACHE_TAGS.todos)],
-	})
+	'use cache'
 
-	return await cacheFn(userId, { limit })
-}
+	cacheTag(getTodosGlobalTag(), getUserTodosTag(userId))
 
-async function getTodosInternal(
-	userId: string,
-	{ limit }: { limit?: number } = {}
-) {
 	return await db.query.TodosTable.findMany({
 		where: ({ clerkUserId }, { eq }) => eq(clerkUserId, userId),
 		orderBy: ({ createdAt }, { asc }) => asc(createdAt),

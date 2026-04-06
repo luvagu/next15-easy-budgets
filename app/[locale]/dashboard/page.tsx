@@ -1,7 +1,7 @@
-import { getBudgets } from '@/server/db/budgets'
-import { getLoans } from '@/server/db/loans'
+import { getBudgets } from '@/features/budgets/db/budgets'
+import { getLoans } from '@/features/loans/db/loans'
 import { auth } from '@clerk/nextjs/server'
-import { getTodos } from '@/server/db/todos'
+import { getTodos } from '@/features/todos/db/todos'
 import { DashboardPageClient } from './_components/DashboardPageClient'
 import { getItemsCount } from '@/features/inventory/db/items'
 

@@ -8,7 +8,7 @@ import {
 	createTodo as createTodoDB,
 	updateTodo as updateTodoDB,
 	deleteTodo as deleteTodoDB,
-} from '@/server/db/todos'
+} from '@/features/todos/db/todos'
 import { isPostgresError } from '@/lib/utils'
 
 const AddTodoSchema = getAddTodoSchema()

@@ -1,5 +1,5 @@
 import { getGlobalTag, getIdTag, getUserTag } from '@/lib/dataCache'
-import { revalidateTag } from 'next/cache'
+import { updateTag } from 'next/cache'
 
 // ─── Inventory Items ────────────────────────────────
 
@@ -27,9 +27,9 @@ export function revalidateInventoryCache({
 	id?: string
 	userId: string
 }) {
-	revalidateTag(getInventoryGlobalTag(), 'max')
-	revalidateTag(getUserInventoryTag(userId), 'max')
-	if (id) revalidateTag(getInventoryItemIdTag(id), 'max')
+	updateTag(getInventoryGlobalTag())
+	updateTag(getUserInventoryTag(userId))
+	if (id) updateTag(getInventoryItemIdTag(id))
 }
 
 // ─── Categories ─────────────────────────────────────
@@ -43,8 +43,8 @@ export function getUserCategoriesTag(userId: string) {
 }
 
 export function revalidateCategoriesCache({ userId }: { userId: string }) {
-	revalidateTag(getCategoriesGlobalTag(), 'max')
-	revalidateTag(getUserCategoriesTag(userId), 'max')
+	updateTag(getCategoriesGlobalTag())
+	updateTag(getUserCategoriesTag(userId))
 }
 
 // ─── Invoices ───────────────────────────────────────
@@ -68,9 +68,9 @@ export function revalidateInvoicesCache({
 	id: string
 	userId: string
 }) {
-	revalidateTag(getInvoicesGlobalTag(), 'max')
-	revalidateTag(getInvoiceIdTag(id), 'max')
-	revalidateTag(getUserInvoicesTag(userId), 'max')
+	updateTag(getInvoicesGlobalTag())
+	updateTag(getInvoiceIdTag(id))
+	updateTag(getUserInvoicesTag(userId))
 }
 
 // ─── Exchange Rates (Global — no userId) ────────────
@@ -80,5 +80,5 @@ export function getExchangeRatesGlobalTag() {
 }
 
 export function revalidateExchangeRatesCache() {
-	revalidateTag(getExchangeRatesGlobalTag(), 'max')
+	updateTag(getExchangeRatesGlobalTag())
 }
