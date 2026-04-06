@@ -2,7 +2,7 @@
 
 import { useEffect, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
@@ -93,17 +93,17 @@ export function ItemFormDialog({
 							categoryName: '',
 							comboQtyThreshold: undefined,
 							comboPriceUsd: undefined,
-						}
+						},
 			)
 		}
 	}, [open, editItem, form])
 
-	const watchCost = form.watch('baseCostUsd')
-	const watchMargin = form.watch('profitMarginPct')
+	const watchCost =
+		useWatch({ control: form.control, name: 'baseCostUsd' }) ?? 0
+	const watchMargin =
+		useWatch({ control: form.control, name: 'profitMarginPct' }) ?? 0
 	const previewSalePrice =
-		watchCost > 0 && watchMargin >= 0
-			? watchCost * (1 + watchMargin / 100)
-			: 0
+		watchCost > 0 && watchMargin >= 0 ? watchCost * (1 + watchMargin / 100) : 0
 
 	const onSubmit = (data: ItemFormValues) => {
 		startTransition(async () => {
@@ -111,7 +111,9 @@ export function ItemFormDialog({
 			if (result.error) {
 				toast.error(result.reason ?? result.message)
 			} else {
-				toast.success(isEdit ? t('toast_item_updated') : t('toast_item_created'))
+				toast.success(
+					isEdit ? t('toast_item_updated') : t('toast_item_created'),
+				)
 				form.reset()
 				onOpenChange(false)
 				onSuccess()
@@ -132,10 +134,7 @@ export function ItemFormDialog({
 				</DialogHeader>
 
 				<Form {...form}>
-					<form
-						onSubmit={form.handleSubmit(onSubmit)}
-						className='space-y-4'
-					>
+					<form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
 						{/* Name */}
 						<FormField
 							control={form.control}
@@ -223,11 +222,7 @@ export function ItemFormDialog({
 												min='0'
 												{...field}
 												onChange={e =>
-													field.onChange(
-														parseFloat(
-															e.target.value
-														) || 0
-													)
+													field.onChange(parseFloat(e.target.value) || 0)
 												}
 											/>
 										</FormControl>
@@ -248,11 +243,7 @@ export function ItemFormDialog({
 												min='0'
 												{...field}
 												onChange={e =>
-													field.onChange(
-														parseFloat(
-															e.target.value
-														) || 0
-													)
+													field.onChange(parseFloat(e.target.value) || 0)
 												}
 											/>
 										</FormControl>
@@ -267,8 +258,7 @@ export function ItemFormDialog({
 							<p className='text-sm text-muted-foreground'>
 								{t('label_sale_price')}:{' '}
 								<span className='font-semibold text-foreground'>
-									$
-									{previewSalePrice.toFixed(2)}
+									${previewSalePrice.toFixed(2)}
 								</span>
 							</p>
 						)}
@@ -285,9 +275,7 @@ export function ItemFormDialog({
 								name='comboQtyThreshold'
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>
-											{t('label_combo_min_qty')}
-										</FormLabel>
+										<FormLabel>{t('label_combo_min_qty')}</FormLabel>
 										<FormControl>
 											<Input
 												type='number'
@@ -297,11 +285,7 @@ export function ItemFormDialog({
 												value={field.value ?? ''}
 												onChange={e => {
 													const v = e.target.value
-													field.onChange(
-														v === ''
-															? undefined
-															: parseInt(v)
-													)
+													field.onChange(v === '' ? undefined : parseInt(v))
 												}}
 											/>
 										</FormControl>
@@ -324,11 +308,7 @@ export function ItemFormDialog({
 												value={field.value ?? ''}
 												onChange={e => {
 													const v = e.target.value
-													field.onChange(
-														v === ''
-															? undefined
-															: parseFloat(v)
-													)
+													field.onChange(v === '' ? undefined : parseFloat(v))
 												}}
 											/>
 										</FormControl>

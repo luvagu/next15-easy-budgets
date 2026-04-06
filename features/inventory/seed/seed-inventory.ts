@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Inventory Seed Script
  *
@@ -65,7 +66,7 @@ async function seed() {
 
 	// ─── 3. Inventory Items ──────────────────────────────────────
 
-	const [chicken, cheese, rice, milk, coffee] = await db
+	const [chicken, cheese, rice, , coffee] = await db
 		.insert(InventoryItemsTable)
 		.values([
 			{
@@ -226,13 +227,15 @@ async function seed() {
 	console.log('')
 	console.log('📊 Expected dashboard stats:')
 	console.log(
-		`   Total Inventory Value: $${(50 * 3.5 + 30 * 5.0 + 200 * 1.2 + 3 * 0.9 + 15 * 8.0).toFixed(2)}`
+		`   Total Inventory Value: $${(50 * 3.5 + 30 * 5.0 + 200 * 1.2 + 3 * 0.9 + 15 * 8.0).toFixed(2)}`,
 	)
 	console.log(
-		`   Gross Profit (MTD):    $${(7.0 + 3.0 + 5.25 + 8.0).toFixed(2)}`
+		`   Gross Profit (MTD):    $${(7.0 + 3.0 + 5.25 + 8.0).toFixed(2)}`,
 	)
 	console.log(`   Low Stock Alerts:      1 (Whole Milk = 3)`)
-	console.log(`   Top 3 by Profit:       Coffee ($8.00), Chicken ($7.00), Cheese ($5.25)`)
+	console.log(
+		`   Top 3 by Profit:       Coffee ($8.00), Chicken ($7.00), Cheese ($5.25)`,
+	)
 	console.log('')
 	console.log('✅ Seed complete!')
 }

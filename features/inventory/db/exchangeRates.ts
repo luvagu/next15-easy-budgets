@@ -1,6 +1,5 @@
 import { db } from '@/drizzle/db'
 import { ExchangeRatesCacheTable } from '@/drizzle/schema'
-import { eq } from 'drizzle-orm'
 import { cacheTag } from 'next/dist/server/use-cache/cache-tag'
 import {
 	getExchangeRatesGlobalTag,
@@ -30,7 +29,7 @@ export async function getExchangeRate(currencyCode: string) {
 
 export async function upsertExchangeRate(
 	currencyCode: string,
-	rateToUsd: number
+	rateToUsd: number,
 ) {
 	await db
 		.insert(ExchangeRatesCacheTable)

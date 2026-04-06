@@ -4,7 +4,7 @@ import {
 	SaleLineItemsTable,
 	SalesInvoicesTable,
 } from '@/drizzle/schema'
-import { and, desc, eq, gte, lte, sql, sum, count } from 'drizzle-orm'
+import { and, desc, eq, gte, lte, sql, count } from 'drizzle-orm'
 import { cacheTag } from 'next/dist/server/use-cache/cache-tag'
 import {
 	getInventoryGlobalTag,
@@ -16,7 +16,7 @@ import {
 // ─── CRUD ────────────────────────────────────────────────────────
 
 export async function createItem(
-	data: typeof InventoryItemsTable.$inferInsert
+	data: typeof InventoryItemsTable.$inferInsert,
 ) {
 	const [newItem] = await db
 		.insert(InventoryItemsTable)
@@ -30,7 +30,7 @@ export async function createItem(
 
 export async function updateItem(
 	data: Partial<typeof InventoryItemsTable.$inferInsert>,
-	{ id, userId }: { id: string; userId: string }
+	{ id, userId }: { id: string; userId: string },
 ) {
 	const { rowCount } = await db
 		.update(InventoryItemsTable)
@@ -38,8 +38,8 @@ export async function updateItem(
 		.where(
 			and(
 				eq(InventoryItemsTable.id, id),
-				eq(InventoryItemsTable.clerkUserId, userId)
-			)
+				eq(InventoryItemsTable.clerkUserId, userId),
+			),
 		)
 
 	const isSuccess = rowCount > 0
@@ -63,8 +63,8 @@ export async function deleteItem({
 		.where(
 			and(
 				eq(InventoryItemsTable.id, id),
-				eq(InventoryItemsTable.clerkUserId, userId)
-			)
+				eq(InventoryItemsTable.clerkUserId, userId),
+			),
 		)
 
 	const isDeleted = rowCount > 0
@@ -108,7 +108,7 @@ export async function getItemsByUser(
 		offset?: number
 		categoryId?: string
 		brand?: string
-	} = {}
+	} = {},
 ) {
 	'use cache'
 
@@ -134,7 +134,7 @@ export async function getItemsByUser(
 
 export async function getItemsCount(
 	userId: string,
-	{ categoryId }: { categoryId?: string } = {}
+	{ categoryId }: { categoryId?: string } = {},
 ) {
 	'use cache'
 
@@ -165,8 +165,8 @@ export async function getDistinctBrands(userId: string) {
 		.where(
 			and(
 				eq(InventoryItemsTable.clerkUserId, userId),
-				sql`${InventoryItemsTable.brand} IS NOT NULL`
-			)
+				sql`${InventoryItemsTable.brand} IS NOT NULL`,
+			),
 		)
 		.orderBy(InventoryItemsTable.brand)
 
@@ -201,8 +201,7 @@ export async function addStock({
 			? (totalOldValue + totalNewValue) / newTotalQty
 			: newCostPerUnit
 
-	const newBaseSalePriceUsd =
-		newBaseCostUsd * (1 + item.profitMarginPct / 100)
+	const newBaseSalePriceUsd = newBaseCostUsd * (1 + item.profitMarginPct / 100)
 
 	await db
 		.update(InventoryItemsTable)
@@ -214,8 +213,8 @@ export async function addStock({
 		.where(
 			and(
 				eq(InventoryItemsTable.id, id),
-				eq(InventoryItemsTable.clerkUserId, userId)
-			)
+				eq(InventoryItemsTable.clerkUserId, userId),
+			),
 		)
 
 	revalidateInventoryCache({ id, userId })
@@ -226,7 +225,7 @@ export async function addStock({
 export async function findSimilarItems(
 	userId: string,
 	name: string,
-	brand?: string
+	brand?: string,
 ) {
 	const normalizedName = name.trim().toLowerCase()
 	const normalizedBrand = brand?.trim().toLowerCase() ?? null
@@ -240,8 +239,8 @@ export async function findSimilarItems(
 		.where(
 			and(
 				eq(InventoryItemsTable.clerkUserId, userId),
-				sql`LOWER(${InventoryItemsTable.name}) = ${normalizedName}`
-			)
+				sql`LOWER(${InventoryItemsTable.name}) = ${normalizedName}`,
+			),
 		)
 
 	// Build the set of exact-match IDs so we can exclude them from fuzzy
@@ -269,7 +268,12 @@ export async function findSimilarItems(
 
 	// Exclude items already returned as exact matches
 	if (exactIds.length > 0) {
-		fuzzyConditions.push(sql`${InventoryItemsTable.id} NOT IN (${sql.join(exactIds.map(id => sql`${id}`), sql`, `)})`)
+		fuzzyConditions.push(
+			sql`${InventoryItemsTable.id} NOT IN (${sql.join(
+				exactIds.map(id => sql`${id}`),
+				sql`, `,
+			)})`,
+		)
 	}
 
 	const fuzzyMatches = await db
@@ -296,8 +300,8 @@ export async function getTotalInventoryValue(userId: string) {
 		.where(
 			and(
 				eq(InventoryItemsTable.clerkUserId, userId),
-				sql`${InventoryItemsTable.stockQty} > 0`
-			)
+				sql`${InventoryItemsTable.stockQty} > 0`,
+			),
 		)
 
 	return Number(result.total)
@@ -306,10 +310,7 @@ export async function getTotalInventoryValue(userId: string) {
 export async function getGrossProfitMTD(userId: string) {
 	'use cache'
 
-	cacheTag(
-		getInventoryGlobalTag(),
-		getUserInventoryTag(userId)
-	)
+	cacheTag(getInventoryGlobalTag(), getUserInventoryTag(userId))
 
 	const now = new Date()
 	const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -321,13 +322,13 @@ export async function getGrossProfitMTD(userId: string) {
 		.from(SaleLineItemsTable)
 		.innerJoin(
 			SalesInvoicesTable,
-			eq(SaleLineItemsTable.invoiceId, SalesInvoicesTable.id)
+			eq(SaleLineItemsTable.invoiceId, SalesInvoicesTable.id),
 		)
 		.where(
 			and(
 				eq(SalesInvoicesTable.clerkUserId, userId),
-				gte(SalesInvoicesTable.createdAt, firstOfMonth)
-			)
+				gte(SalesInvoicesTable.createdAt, firstOfMonth),
+			),
 		)
 
 	return Number(result.total)
@@ -344,8 +345,8 @@ export async function getLowStockCount(userId: string) {
 		.where(
 			and(
 				eq(InventoryItemsTable.clerkUserId, userId),
-				lte(InventoryItemsTable.stockQty, 5)
-			)
+				lte(InventoryItemsTable.stockQty, 5),
+			),
 		)
 
 	return result.count
@@ -353,7 +354,7 @@ export async function getLowStockCount(userId: string) {
 
 export async function getTopPerformingItems(
 	userId: string,
-	{ limit = 3 }: { limit?: number } = {}
+	{ limit = 3 }: { limit?: number } = {},
 ) {
 	'use cache'
 
@@ -369,17 +370,15 @@ export async function getTopPerformingItems(
 		.from(SaleLineItemsTable)
 		.innerJoin(
 			SalesInvoicesTable,
-			eq(SaleLineItemsTable.invoiceId, SalesInvoicesTable.id)
+			eq(SaleLineItemsTable.invoiceId, SalesInvoicesTable.id),
 		)
 		.innerJoin(
 			InventoryItemsTable,
-			eq(SaleLineItemsTable.itemId, InventoryItemsTable.id)
+			eq(SaleLineItemsTable.itemId, InventoryItemsTable.id),
 		)
 		.where(eq(SalesInvoicesTable.clerkUserId, userId))
 		.groupBy(SaleLineItemsTable.itemId, InventoryItemsTable.name)
-		.orderBy(
-			desc(sql`SUM(${SaleLineItemsTable.lineProfitUsd})`)
-		)
+		.orderBy(desc(sql`SUM(${SaleLineItemsTable.lineProfitUsd})`))
 		.limit(limit)
 
 	return rows.map(r => ({

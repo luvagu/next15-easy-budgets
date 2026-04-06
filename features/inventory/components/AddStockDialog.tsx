@@ -2,7 +2,7 @@
 
 import { useEffect, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
@@ -66,8 +66,16 @@ export function AddStockDialog({
 		}
 	}, [open, item, form])
 
-	const watchQty = form.watch('qty')
-	const watchCost = form.watch('costPerUnit')
+	const watchQty = useWatch({
+		control: form.control,
+		name: 'qty',
+		defaultValue: 1,
+	})
+	const watchCost = useWatch({
+		control: form.control,
+		name: 'costPerUnit',
+		defaultValue: item?.baseCostUsd ?? 0,
+	})
 
 	// WAC preview
 	const currentStock = item?.stockQty ?? 0
@@ -107,20 +115,13 @@ export function AddStockDialog({
 				</DialogHeader>
 
 				<Form {...form}>
-					<form
-						onSubmit={form.handleSubmit(onSubmit)}
-						className='space-y-4'
-					>
+					<form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
 						{/* Current Stock (readonly) */}
 						<div>
 							<label className='text-sm font-medium'>
 								{t('label_current_stock')}
 							</label>
-							<Input
-								value={currentStock}
-								disabled
-								className='mt-1'
-							/>
+							<Input value={currentStock} disabled className='mt-1' />
 						</div>
 
 						{/* Quantity to Add */}
@@ -137,9 +138,7 @@ export function AddStockDialog({
 											min='1'
 											{...field}
 											onChange={e =>
-												field.onChange(
-													parseInt(e.target.value) || 1
-												)
+												field.onChange(parseInt(e.target.value) || 1)
 											}
 										/>
 									</FormControl>
@@ -162,10 +161,7 @@ export function AddStockDialog({
 											min='0'
 											{...field}
 											onChange={e =>
-												field.onChange(
-													parseFloat(e.target.value) ||
-														0
-												)
+												field.onChange(parseFloat(e.target.value) || 0)
 											}
 										/>
 									</FormControl>

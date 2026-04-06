@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useForm, useFieldArray, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { format } from 'date-fns'
@@ -106,9 +106,24 @@ export function RegisterSaleDialog({
 		name: 'items',
 	})
 
-	const watchItems = form.watch('items')
-	const watchDelivery = form.watch('deliveryChargeUsd')
-	const watchIsCreditSale = form.watch('isCreditSale')
+	// Use useWatch to subscribe to specific form values safely
+	const watchItems = useWatch({
+		control: form.control,
+		name: 'items',
+		defaultValue: form.getValues('items') ?? [],
+	}) as SaleFormValues['items']
+
+	const watchDelivery = useWatch({
+		control: form.control,
+		name: 'deliveryChargeUsd',
+		defaultValue: form.getValues('deliveryChargeUsd') ?? 0,
+	}) as number
+
+	const watchIsCreditSale = useWatch({
+		control: form.control,
+		name: 'isCreditSale',
+		defaultValue: form.getValues('isCreditSale') ?? false,
+	}) as boolean
 
 	// Build an item lookup map
 	const itemMap = useMemo(() => {
@@ -134,9 +149,7 @@ export function RegisterSaleDialog({
 				item.comboPriceUsd != null &&
 				line.qty >= item.comboQtyThreshold
 
-			const unitPrice = isCombo
-				? item.comboPriceUsd!
-				: item.baseSalePriceUsd
+			const unitPrice = isCombo ? item.comboPriceUsd! : item.baseSalePriceUsd
 
 			return {
 				unitPrice,
@@ -175,10 +188,7 @@ export function RegisterSaleDialog({
 				</DialogHeader>
 
 				<Form {...form}>
-					<form
-						onSubmit={form.handleSubmit(onSubmit)}
-						className='space-y-4'
-					>
+					<form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
 						{/* Customer Name */}
 						<FormField
 							control={form.control}
@@ -216,14 +226,11 @@ export function RegisterSaleDialog({
 										<div className='flex-1 min-w-0'>
 											<p className='text-sm font-medium truncate'>
 												{item.name}
-												{item.brand
-													? ` (${item.brand})`
-													: ''}
+												{item.brand ? ` (${item.brand})` : ''}
 											</p>
 											<div className='flex items-center gap-2 text-xs text-muted-foreground'>
 												<span>
-													{formatUsd(item.baseSalePriceUsd)}
-													/{item.unit}
+													{formatUsd(item.baseSalePriceUsd)}/{item.unit}
 												</span>
 												{detail.isCombo && (
 													<Badge
@@ -253,7 +260,10 @@ export function RegisterSaleDialog({
 												onClick={() => {
 													const current = watchItems[index]?.qty ?? 1
 													if (current > 1) {
-														update(index, { ...fields[index], qty: current - 1 })
+														update(index, {
+															...fields[index],
+															qty: current - 1,
+														})
 													}
 												}}
 											>
@@ -280,7 +290,10 @@ export function RegisterSaleDialog({
 												onClick={() => {
 													const current = watchItems[index]?.qty ?? 1
 													if (current < item.stockQty) {
-														update(index, { ...fields[index], qty: current + 1 })
+														update(index, {
+															...fields[index],
+															qty: current + 1,
+														})
 													}
 												}}
 											>
@@ -331,9 +344,7 @@ export function RegisterSaleDialog({
 											min='0'
 											{...field}
 											onChange={e =>
-												field.onChange(
-													parseFloat(e.target.value) || 0
-												)
+												field.onChange(parseFloat(e.target.value) || 0)
 											}
 										/>
 									</FormControl>
@@ -381,8 +392,7 @@ export function RegisterSaleDialog({
 														variant='outline'
 														className={cn(
 															'w-full justify-start font-normal',
-															!field.value &&
-																'text-muted-foreground'
+															!field.value && 'text-muted-foreground',
 														)}
 													>
 														<CalendarIcon className='size-3.5' />
@@ -392,10 +402,7 @@ export function RegisterSaleDialog({
 													</Button>
 												</FormControl>
 											</PopoverTrigger>
-											<PopoverContent
-												className='w-auto p-0'
-												align='start'
-											>
+											<PopoverContent className='w-auto p-0' align='start'>
 												<Calendar
 													mode='single'
 													selected={field.value}
@@ -418,9 +425,7 @@ export function RegisterSaleDialog({
 								<span className='text-muted-foreground'>
 									{t('label_subtotal')}
 								</span>
-								<span className='tabular-nums'>
-									{formatUsd(subtotal)}
-								</span>
+								<span className='tabular-nums'>{formatUsd(subtotal)}</span>
 							</div>
 							{(watchDelivery ?? 0) > 0 && (
 								<div className='flex justify-between'>
@@ -434,9 +439,7 @@ export function RegisterSaleDialog({
 							)}
 							<div className='flex justify-between font-semibold text-base'>
 								<span>{t('label_total')}</span>
-								<span className='tabular-nums'>
-									{formatUsd(grandTotal)}
-								</span>
+								<span className='tabular-nums'>{formatUsd(grandTotal)}</span>
 							</div>
 						</div>
 
@@ -448,12 +451,7 @@ export function RegisterSaleDialog({
 							>
 								{t('label_cancel')}
 							</Button>
-							<Button
-								type='submit'
-								disabled={
-									isPending || fields.length === 0
-								}
-							>
+							<Button type='submit' disabled={isPending || fields.length === 0}>
 								{isPending && <Spinner className='size-4' />}
 								{t('label_complete_sale')}
 							</Button>
