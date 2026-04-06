@@ -1,4 +1,5 @@
 import { BrandLogo } from '@/components/BrandLogo'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { Link } from '@/i18n/navigation'
 import { UserButton } from '@clerk/nextjs'
 
@@ -9,6 +10,7 @@ export function NavBar() {
 				<Link className='mr-auto' href='/dashboard'>
 					<BrandLogo />
 				</Link>
+				<ThemeToggle />
 				<UserButton />
 			</nav>
 		</header>

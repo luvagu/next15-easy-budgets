@@ -1,4 +1,5 @@
 import { BrandLogo } from '@/components/BrandLogo'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { Link } from '@/i18n/navigation'
 import { Show, SignInButton } from '@clerk/nextjs'
 import { getTranslations } from 'next-intl/server'
@@ -12,6 +13,7 @@ export async function NavBar() {
 				<Link href={'/'} className='mr-auto'>
 					<BrandLogo />
 				</Link>
+				<ThemeToggle />
 				<span className='text-lg'>
 					<Show when='signed-out'>
 						<SignInButton>

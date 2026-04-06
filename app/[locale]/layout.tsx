@@ -7,6 +7,7 @@ import { getTranslations } from 'next-intl/server'
 import { routing } from '@/i18n/routing'
 import { notFound } from 'next/navigation'
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
 // ToDo: remove
 // import '@/features/inventory/seed/seed-inventory'
@@ -54,12 +55,14 @@ export default async function RootLayout({
 
 	return (
 		<ClerkProvider>
-			<html lang={locale}>
+			<html lang={locale} suppressHydrationWarning>
 				<body
 					className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans bg-background`}
 				>
-					<NextIntlClientProvider>{children}</NextIntlClientProvider>
-					<Toaster richColors />
+					<ThemeProvider>
+						<NextIntlClientProvider>{children}</NextIntlClientProvider>
+						<Toaster richColors />
+					</ThemeProvider>
 				</body>
 			</html>
 		</ClerkProvider>
