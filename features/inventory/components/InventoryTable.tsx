@@ -217,7 +217,7 @@ export function InventoryTable({
 				<Button
 					size='sm'
 					variant='outline'
-					className='text-orange-800'
+					className='text-orange-700'
 					onClick={() => setCalcOpen(true)}
 				>
 					<CalculatorIcon className='size-3.5' />

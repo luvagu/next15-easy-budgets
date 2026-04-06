@@ -242,7 +242,7 @@ export function BulkUploadDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={handleClose}>
-			<DialogContent className='sm:max-w-3xl max-h-[90vh] overflow-y-auto'>
+			<DialogContent className='sm:max-w-3xl max-h-[90vh]'>
 				<DialogHeader>
 					<DialogTitle>{t('dialog_bulk_title')}</DialogTitle>
 					<DialogDescription>
@@ -321,7 +321,7 @@ export function BulkUploadDialog({
 
 				{/* ─── Step 2: Review ────────────────────────── */}
 				{step === 'review' && (
-					<div className='space-y-3'>
+					<div className='space-y-3 overflow-y-auto'>
 						<div className='rounded-md border overflow-x-auto'>
 							<Table>
 								<TableHeader>
@@ -346,7 +346,7 @@ export function BulkUploadDialog({
 												<TableCell className='text-muted-foreground'>
 													{vr.rowIndex + 1}
 												</TableCell>
-												<TableCell>
+												<TableCell className='whitespace-normal break-words'>
 													<div className='flex items-center gap-1.5'>
 														{statusIcon(vr.status)}
 														{statusLabel(vr.status)}
