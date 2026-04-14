@@ -105,7 +105,7 @@ export function AddStockDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className='sm:max-w-sm'>
+			<DialogContent className='sm:max-w-sm max-h-[90dvh] overflow-y-auto'>
 				<DialogHeader>
 					<DialogTitle>{t('dialog_add_stock_title')}</DialogTitle>
 					<DialogDescription>

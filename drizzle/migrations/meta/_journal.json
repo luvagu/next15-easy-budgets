@@ -29,6 +29,34 @@
       "when": 1775178346153,
       "tag": "0003_uneven_bloodstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776145412273,
+      "tag": "0004_early_robbie_robertson",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776146578233,
+      "tag": "0005_tiresome_mantis",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776147238244,
+      "tag": "0006_tidy_chamber",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1776147668534,
+      "tag": "0007_tidy_whirlwind",
+      "breakpoints": true
     }
   ]
 }

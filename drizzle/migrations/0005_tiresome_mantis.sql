@@ -1,0 +1,1 @@
+ALTER TABLE "sale_line_items" ADD COLUMN "refunded_qty" integer DEFAULT 0 NOT NULL;

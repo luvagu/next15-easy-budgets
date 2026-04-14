@@ -30,6 +30,8 @@ export type InvoiceWithLineItems = SalesInvoice & {
 export type DashboardStats = {
 	totalInventoryValue: number
 	grossProfitMTD: number
+	projectedRevenue: number
+	totalSalesAllTime: number
 	lowStockCount: number
 	topItems: {
 		itemId: string | null

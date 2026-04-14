@@ -14,6 +14,9 @@ import {
 	deleteItem as deleteItemDB,
 	addStock as addStockDB,
 	findSimilarItems,
+	getBrandsWithItemCount,
+	renameBrand as renameBrandDB,
+	deleteBrand as deleteBrandDB,
 } from '../db/items'
 import { findOrCreateCategory } from '../db/categories'
 import { revalidateInventoryCache, revalidateCategoriesCache } from '../db/cache'
@@ -67,7 +70,10 @@ export async function addOrUpdateItem(
 			await updateItemDB(itemData, { id: existingId, userId })
 			return { error: false, message: t('success_generic') }
 		} else {
-			const newItem = await createItemDB(itemData)
+			const newItem = await createItemDB({
+				...itemData,
+				stockQty: data.initialStock ?? 0,
+			})
 			return { error: false, message: t('success_generic'), data: newItem }
 		}
 	} catch {
@@ -87,11 +93,14 @@ export async function deleteItem(id: string) {
 		return { error: true, message: t('error_unauthorized') }
 	}
 
-	const isSuccess = await deleteItemDB({ id, userId })
-
-	return {
-		error: !isSuccess,
-		message: isSuccess ? t('success_generic') : t('error_generic'),
+	try {
+		const isSuccess = await deleteItemDB({ id, userId })
+		return {
+			error: !isSuccess,
+			message: isSuccess ? t('success_generic') : t('error_generic'),
+		}
+	} catch (err) {
+		return { error: true, message: (err as Error).message ?? t('error_generic') }
 	}
 }
 
@@ -134,6 +143,51 @@ export async function checkDuplicates(name: string, brand?: string) {
 	if (userId == null) return { exact: [], fuzzy: [] }
 
 	return findSimilarItems(userId, name, brand)
+}
+
+// ─── BRAND MANAGEMENT ───────────────────────────────────────────
+
+export async function getBrandsWithCount() {
+	const { userId } = await auth()
+
+	if (userId == null) return []
+
+	return getBrandsWithItemCount(userId)
+}
+
+export async function renameBrand(oldName: string, newName: string) {
+	const { userId } = await auth()
+	const t = await getTranslations('server_messages')
+
+	if (userId == null) {
+		return { error: true, message: t('error_unauthorized') }
+	}
+
+	try {
+		const isSuccess = await renameBrandDB({ oldName, newName: newName.trim(), userId })
+		return {
+			error: !isSuccess,
+			message: isSuccess ? t('success_generic') : t('error_generic'),
+		}
+	} catch {
+		return { error: true, message: t('error_generic') }
+	}
+}
+
+export async function deleteBrand(name: string) {
+	const { userId } = await auth()
+	const t = await getTranslations('server_messages')
+
+	if (userId == null) {
+		return { error: true, message: t('error_unauthorized') }
+	}
+
+	try {
+		const rowCount = await deleteBrandDB({ name, userId })
+		return { error: false, message: t('success_generic'), data: { rowCount } }
+	} catch {
+		return { error: true, message: t('error_generic') }
+	}
 }
 
 // ─── BULK UPLOAD: VALIDATE ──────────────────────────────────────

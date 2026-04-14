@@ -58,6 +58,18 @@ export async function deleteItem({
 	id: string
 	userId: string
 }) {
+	// Guard: refuse deletion if any sale line items reference this item
+	const [{ txCount }] = await db
+		.select({ txCount: count() })
+		.from(SaleLineItemsTable)
+		.where(eq(SaleLineItemsTable.itemId, id))
+
+	if (txCount > 0) {
+		throw new Error(
+			`Cannot delete: this item has ${txCount} recorded sale transaction(s). Cancel or return the sale first.`,
+		)
+	}
+
 	const { rowCount } = await db
 		.delete(InventoryItemsTable)
 		.where(
@@ -171,6 +183,79 @@ export async function getDistinctBrands(userId: string) {
 		.orderBy(InventoryItemsTable.brand)
 
 	return rows.map(r => r.brand).filter(Boolean) as string[]
+}
+
+export async function getBrandsWithItemCount(userId: string) {
+	'use cache'
+
+	cacheTag(getInventoryGlobalTag(), getUserInventoryTag(userId))
+
+	const rows = await db
+		.select({
+			brand: InventoryItemsTable.brand,
+			itemCount: count(InventoryItemsTable.id),
+		})
+		.from(InventoryItemsTable)
+		.where(
+			and(
+				eq(InventoryItemsTable.clerkUserId, userId),
+				sql`${InventoryItemsTable.brand} IS NOT NULL`,
+			),
+		)
+		.groupBy(InventoryItemsTable.brand)
+		.orderBy(InventoryItemsTable.brand)
+
+	return rows.filter(r => r.brand !== null) as { brand: string; itemCount: number }[]
+}
+
+export async function renameBrand({
+	oldName,
+	newName,
+	userId,
+}: {
+	oldName: string
+	newName: string
+	userId: string
+}) {
+	const { rowCount } = await db
+		.update(InventoryItemsTable)
+		.set({ brand: newName.trim(), updatedAt: new Date() })
+		.where(
+			and(
+				eq(InventoryItemsTable.clerkUserId, userId),
+				eq(InventoryItemsTable.brand, oldName),
+			),
+		)
+
+	if (rowCount > 0) {
+		revalidateInventoryCache({ userId })
+	}
+
+	return rowCount > 0
+}
+
+export async function deleteBrand({
+	name,
+	userId,
+}: {
+	name: string
+	userId: string
+}) {
+	const { rowCount } = await db
+		.update(InventoryItemsTable)
+		.set({ brand: null, updatedAt: new Date() })
+		.where(
+			and(
+				eq(InventoryItemsTable.clerkUserId, userId),
+				eq(InventoryItemsTable.brand, name),
+			),
+		)
+
+	if (rowCount > 0) {
+		revalidateInventoryCache({ userId })
+	}
+
+	return rowCount
 }
 
 // ─── WAC (Weighted Average Cost) ────────────────────────────────
@@ -315,9 +400,13 @@ export async function getGrossProfitMTD(userId: string) {
 	const now = new Date()
 	const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
+	// Profit per line = profit_per_unit × (qty - refundedQty), excludes cancelled invoices
 	const [result] = await db
 		.select({
-			total: sql<number>`COALESCE(SUM(${SaleLineItemsTable.lineProfitUsd}), 0)`,
+			total: sql<number>`COALESCE(SUM(
+				(${SaleLineItemsTable.lineProfitUsd} / NULLIF(${SaleLineItemsTable.qty}, 0))
+				* (${SaleLineItemsTable.qty} - ${SaleLineItemsTable.refundedQty})
+			), 0)`,
 		})
 		.from(SaleLineItemsTable)
 		.innerJoin(
@@ -328,6 +417,47 @@ export async function getGrossProfitMTD(userId: string) {
 			and(
 				eq(SalesInvoicesTable.clerkUserId, userId),
 				gte(SalesInvoicesTable.createdAt, firstOfMonth),
+				sql`${SalesInvoicesTable.status} != 'cancelled'`,
+			),
+		)
+
+	return Number(result.total)
+}
+
+export async function getProjectedRevenue(userId: string) {
+	'use cache'
+
+	cacheTag(getInventoryGlobalTag(), getUserInventoryTag(userId))
+
+	const [result] = await db
+		.select({
+			total: sql<number>`COALESCE(SUM(${InventoryItemsTable.stockQty} * ${InventoryItemsTable.baseSalePriceUsd}), 0)`,
+		})
+		.from(InventoryItemsTable)
+		.where(
+			and(
+				eq(InventoryItemsTable.clerkUserId, userId),
+				sql`${InventoryItemsTable.stockQty} > 0`,
+			),
+		)
+
+	return Number(result.total)
+}
+
+export async function getTotalSalesAllTime(userId: string) {
+	'use cache'
+
+	cacheTag(getInventoryGlobalTag(), getUserInventoryTag(userId))
+
+	const [result] = await db
+		.select({
+			total: sql<number>`COALESCE(SUM(${SalesInvoicesTable.totalAmountUsd}), 0)`,
+		})
+		.from(SalesInvoicesTable)
+		.where(
+			and(
+				eq(SalesInvoicesTable.clerkUserId, userId),
+				sql`${SalesInvoicesTable.status} != 'cancelled'`,
 			),
 		)
 

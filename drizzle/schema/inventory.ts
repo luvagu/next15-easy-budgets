@@ -41,7 +41,7 @@ export const InventoryItemsTable = pgTable(
 		clerkUserId: text('clerk_user_id').notNull(),
 		categoryId: uuid('category_id')
 			.notNull()
-			.references(() => InventoryCategoriesTable.id, { onDelete: 'cascade' }),
+			.references(() => InventoryCategoriesTable.id, { onDelete: 'restrict' }),
 		name: text('name').notNull(),
 		brand: text('brand'),
 		unit: text('unit').notNull(),
@@ -75,10 +75,14 @@ export const SalesInvoicesTable = pgTable(
 		customerName: text('customer_name').notNull(),
 		subtotalUsd: real('subtotal_usd').notNull(),
 		deliveryChargeUsd: real('delivery_charge_usd').notNull().default(0),
+		discountType: text('discount_type').$type<'pct' | 'fixed'>(),
+		discountAmountUsd: real('discount_amount_usd').notNull().default(0),
 		totalAmountUsd: real('total_amount_usd').notNull(),
 		loanId: uuid('loan_id').references(() => LoansTable.id, {
 			onDelete: 'set null',
 		}),
+		status: text('status').$type<'completed' | 'partial_refund' | 'cancelled'>().notNull().default('completed'),
+		cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
 		createdAt,
 	},
 	table => [
@@ -96,9 +100,10 @@ export const SaleLineItemsTable = pgTable(
 			.notNull()
 			.references(() => SalesInvoicesTable.id, { onDelete: 'cascade' }),
 		itemId: uuid('item_id').references(() => InventoryItemsTable.id, {
-			onDelete: 'set null',
+			onDelete: 'restrict',
 		}),
 		qty: integer('qty').notNull(),
+		refundedQty: integer('refunded_qty').notNull().default(0),
 		snapshotUnitCostUsd: real('snapshot_unit_cost_usd').notNull(),
 		snapshotSalePriceUsd: real('snapshot_sale_price_usd').notNull(),
 		lineTotalUsd: real('line_total_usd').notNull(),

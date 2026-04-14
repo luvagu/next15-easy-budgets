@@ -28,6 +28,8 @@ import {
 	ShoppingCartIcon,
 	UploadIcon,
 	CalculatorIcon,
+	HistoryIcon,
+	TagsIcon,
 } from 'lucide-react'
 import { getColumns } from './data-table/columns'
 import { DataTablePagination } from './data-table/DataTablePagination'
@@ -37,6 +39,8 @@ import { AddStockDialog } from './AddStockDialog'
 import { RegisterSaleDialog } from './RegisterSaleDialog'
 import { BulkUploadDialog } from './BulkUploadDialog'
 import { ReplacementCostCalculator } from './ReplacementCostCalculator'
+import { SalesHistoryDialog } from './SalesHistoryDialog'
+import { ManageTaxonomyDialog } from './ManageTaxonomyDialog'
 import { fetchInventoryData } from '../actions/data'
 import { deleteItem } from '../actions/items'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
@@ -74,6 +78,8 @@ export function InventoryTable({
 	const [saleDialogOpen, setSaleDialogOpen] = useState(false)
 	const [bulkUploadOpen, setBulkUploadOpen] = useState(false)
 	const [calcOpen, setCalcOpen] = useState(false)
+	const [historyOpen, setHistoryOpen] = useState(false)
+	const [taxonomyOpen, setTaxonomyOpen] = useState(false)
 
 	// Filters
 	const [selectedCategory, setSelectedCategory] = useState('all')
@@ -188,9 +194,9 @@ export function InventoryTable({
 	const saleTotal = selectedRows.reduce((sum, r) => sum + r.baseSalePriceUsd, 0)
 
 	return (
-		<div className='space-y-3'>
-			{/* Action buttons */}
-			<div className='flex items-center gap-2 flex-wrap'>
+		<div className='space-y-4 sm:space-y-6'>
+			{/* Primary actions */}
+			<div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
 				<Button
 					size='sm'
 					onClick={() => {
@@ -209,6 +215,15 @@ export function InventoryTable({
 				<Button
 					size='sm'
 					variant='outline'
+					className='text-orange-700 dark:text-orange-500'
+					onClick={() => setCalcOpen(true)}
+				>
+					<CalculatorIcon className='size-3.5' />
+					{t('label_calculator')}
+				</Button>
+				<Button
+					size='sm'
+					variant='outline'
 					onClick={() => setBulkUploadOpen(true)}
 				>
 					<UploadIcon className='size-3.5' />
@@ -217,11 +232,18 @@ export function InventoryTable({
 				<Button
 					size='sm'
 					variant='outline'
-					className='text-orange-700'
-					onClick={() => setCalcOpen(true)}
+					onClick={() => setHistoryOpen(true)}
 				>
-					<CalculatorIcon className='size-3.5' />
-					{t('label_calculator')}
+					<HistoryIcon className='size-3.5' />
+					{t('label_sales_history')}
+				</Button>
+				<Button
+					size='sm'
+					variant='outline'
+					onClick={() => setTaxonomyOpen(true)}
+				>
+					<TagsIcon className='size-3.5' />
+					{t('label_manage_taxonomy')}
 				</Button>
 			</div>
 
@@ -235,7 +257,7 @@ export function InventoryTable({
 				onBrandChange={setSelectedBrand}
 			/>
 
-			<div className='rounded-md border bg-background'>
+			<div className='rounded-md border bg-card -mt-2 sm:-mt-3'>
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map(headerGroup => (
@@ -336,6 +358,18 @@ export function InventoryTable({
 				onOpenChange={setCalcOpen}
 				exchangeRates={exchangeRates}
 				defaultUsdAmount={saleTotal}
+			/>
+
+			<SalesHistoryDialog
+				open={historyOpen}
+				onOpenChange={setHistoryOpen}
+				onStockChanged={handleFormSuccess}
+			/>
+
+			<ManageTaxonomyDialog
+				open={taxonomyOpen}
+				onOpenChange={setTaxonomyOpen}
+				onChanged={handleFormSuccess}
 			/>
 		</div>
 	)

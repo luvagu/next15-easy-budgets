@@ -107,7 +107,7 @@ export function ReplacementCostCalculator({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className='sm:max-w-md'>
+			<DialogContent className='sm:max-w-md max-h-[90dvh] overflow-y-auto'>
 				<DialogHeader>
 					<DialogTitle>{t('dialog_rcalc_title')}</DialogTitle>
 					<DialogDescription>{t('dialog_rcalc_desc')}</DialogDescription>
@@ -170,10 +170,10 @@ export function ReplacementCostCalculator({
 									<p className='text-[10px] font-medium uppercase tracking-wide text-muted-foreground'>
 										{t('rcalc_label_bcv')}
 									</p>
-									<p className='text-[11px] text-muted-foreground tabular-nums'>
+									<p className='text-[11px] text-muted-foreground tabular-nums truncate'>
 										1 USD = {formatVes(activeBcv)}
 									</p>
-									<p className='text-xl font-bold tabular-nums leading-tight'>
+									<p className='text-base font-bold tabular-nums leading-tight break-all'>
 										{formatVes(bcvAmount)}
 									</p>
 								</CardContent>
@@ -185,10 +185,10 @@ export function ReplacementCostCalculator({
 									<p className='text-[10px] font-medium uppercase tracking-wide text-muted-foreground'>
 										{t('rcalc_label_paralelo')}
 									</p>
-									<p className='text-[11px] text-muted-foreground tabular-nums'>
+									<p className='text-[11px] text-muted-foreground tabular-nums truncate'>
 										1 USD = {formatVes(activeParalelo)}
 									</p>
-									<p className='text-xl font-bold tabular-nums text-destructive leading-tight'>
+									<p className='text-base font-bold tabular-nums text-destructive leading-tight break-all'>
 										{formatVes(paraleloAmount)}
 									</p>
 								</CardContent>
@@ -198,8 +198,8 @@ export function ReplacementCostCalculator({
 
 					{/* Difference row */}
 					{rates && !isLoading && diffAmount > 0 && (
-						<div className='flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm'>
-							<span className='text-muted-foreground'>
+						<div className='flex flex-wrap items-center justify-between gap-1 rounded-md bg-muted/50 px-3 py-2 text-sm'>
+							<span className='text-muted-foreground shrink-0'>
 								{t('rcalc_diff_label')}
 							</span>
 							<span className='font-semibold tabular-nums text-destructive text-right'>

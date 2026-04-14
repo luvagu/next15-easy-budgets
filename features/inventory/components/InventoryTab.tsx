@@ -44,7 +44,7 @@ export function InventoryTab() {
 	}
 
 	return (
-		<div className='flex flex-col gap-6'>
+		<div className='flex flex-col gap-4 sm:gap-6'>
 			<InventoryStats stats={stats} />
 			<InventoryTable
 				exchangeRates={ratesMap}

@@ -60,7 +60,7 @@ export function DataTableToolbar<TData>({
 	return (
 		<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap'>
 			{/* Search */}
-			<div className='relative flex-1 min-w-[180px] max-w-sm bg-background'>
+			<div className='relative flex-1 min-w-45 max-w-sm bg-background'>
 				<SearchIcon className='absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground' />
 				<Input
 					placeholder={t('label_search_placeholder')}
@@ -75,7 +75,7 @@ export function DataTableToolbar<TData>({
 			<div className='flex items-center gap-2 flex-wrap'>
 				{/* Category filter */}
 				<Select value={selectedCategory} onValueChange={onCategoryChange}>
-					<SelectTrigger size='sm' className='min-w-[120px] bg-background'>
+					<SelectTrigger size='sm' className='min-w-30 bg-background'>
 						<SelectValue placeholder={t('label_category')} />
 					</SelectTrigger>
 					<SelectContent>
@@ -91,7 +91,7 @@ export function DataTableToolbar<TData>({
 				{/* Brand filter */}
 				{brands.length > 0 && (
 					<Select value={selectedBrand} onValueChange={onBrandChange}>
-						<SelectTrigger size='sm' className='min-w-[100px] bg-background'>
+						<SelectTrigger size='sm' className='min-w-25 bg-background'>
 							<SelectValue placeholder={t('label_brand')} />
 						</SelectTrigger>
 						<SelectContent>
@@ -113,7 +113,7 @@ export function DataTableToolbar<TData>({
 							<span className='hidden sm:inline'>{t('label_columns')}</span>
 						</Button>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align='end' className='w-[150px]'>
+					<DropdownMenuContent align='end' className='w-37.5'>
 						<DropdownMenuLabel>{t('label_toggle_columns')}</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						{table

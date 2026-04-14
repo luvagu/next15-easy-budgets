@@ -11,6 +11,7 @@ export const getInventoryItemSchema = (message = 'Required') =>
 			baseCostUsd: z.number().positive(message),
 			profitMarginPct: z.number().min(0).max(1000),
 			categoryName: z.string().min(1, message),
+			initialStock: z.number().int().nonnegative(),
 			comboQtyThreshold: z.number().int().positive().optional(),
 			comboPriceUsd: z.number().positive().optional(),
 		})
@@ -22,6 +23,28 @@ export const getInventoryItemSchema = (message = 'Required') =>
 			},
 			{
 				message: 'Both combo fields must be set together',
+				path: ['comboPriceUsd'],
+			},
+		)
+		.refine(
+			data => {
+				if (data.comboPriceUsd == null) return true
+				return data.comboPriceUsd >= data.baseCostUsd
+			},
+			{
+				message: 'Combo price cannot be below item cost (would sell at a loss)',
+				path: ['comboPriceUsd'],
+			},
+		)
+		.refine(
+			data => {
+				if (data.comboPriceUsd == null) return true
+				const regularPrice = data.baseCostUsd * (1 + data.profitMarginPct / 100)
+				return data.comboPriceUsd < regularPrice
+			},
+			{
+				message:
+					'Combo price must be less than the regular sale price (no discount)',
 				path: ['comboPriceUsd'],
 			},
 		)
@@ -45,12 +68,14 @@ export const getSaleInvoiceSchema = (message = 'Required') =>
 		.object({
 			customerName: z.string().min(1, message),
 			deliveryChargeUsd: z.number().nonnegative(),
+			discountType: z.enum(['pct', 'fixed']),
+			discountValue: z.number().nonnegative(),
 			isCreditSale: z.boolean(),
 			paymentDueDate: z.date().optional(),
 			items: z
 				.array(
 					z.object({
-						itemId: z.string().uuid(),
+						itemId: z.uuid(),
 						qty: z.number().int().positive(message),
 					}),
 				)

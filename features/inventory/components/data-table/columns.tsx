@@ -36,7 +36,9 @@ function formatUsd(value: number) {
 	}).format(value)
 }
 
-export function getColumns(config: ColumnsConfig): ColumnDef<InventoryItemWithCategory>[] {
+export function getColumns(
+	config: ColumnsConfig,
+): ColumnDef<InventoryItemWithCategory>[] {
 	const { onEdit, onAddStock, onDelete, t } = config
 
 	return [
@@ -49,9 +51,7 @@ export function getColumns(config: ColumnsConfig): ColumnDef<InventoryItemWithCa
 						table.getIsAllPageRowsSelected() ||
 						(table.getIsSomePageRowsSelected() && 'indeterminate')
 					}
-					onCheckedChange={value =>
-						table.toggleAllPageRowsSelected(!!value)
-					}
+					onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
 					aria-label='Select all'
 				/>
 			),
@@ -75,9 +75,7 @@ export function getColumns(config: ColumnsConfig): ColumnDef<InventoryItemWithCa
 					variant='ghost'
 					size='sm'
 					className='-ml-3'
-					onClick={() =>
-						column.toggleSorting(column.getIsSorted() === 'asc')
-					}
+					onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 				>
 					{t('col_item')}
 					<ArrowUpDownIcon className='size-3.5' />
@@ -86,10 +84,8 @@ export function getColumns(config: ColumnsConfig): ColumnDef<InventoryItemWithCa
 			cell: ({ row }) => {
 				const item = row.original
 				return (
-					<div className='min-w-[140px]'>
-						<div className='font-medium leading-tight'>
-							{item.name}
-						</div>
+					<div className='min-w-35'>
+						<div className='font-medium leading-tight'>{item.name}</div>
 						<div className='text-xs text-muted-foreground leading-tight'>
 							{item.category.name}
 						</div>
@@ -116,9 +112,7 @@ export function getColumns(config: ColumnsConfig): ColumnDef<InventoryItemWithCa
 			accessorKey: 'unit',
 			header: t('col_unit'),
 			cell: ({ row }) => (
-				<span className='text-muted-foreground'>
-					{row.getValue('unit')}
-				</span>
+				<span className='text-muted-foreground'>{row.getValue('unit')}</span>
 			),
 		},
 
@@ -141,9 +135,7 @@ export function getColumns(config: ColumnsConfig): ColumnDef<InventoryItemWithCa
 					variant='ghost'
 					size='sm'
 					className='-ml-3'
-					onClick={() =>
-						column.toggleSorting(column.getIsSorted() === 'asc')
-					}
+					onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 				>
 					{t('col_stock')}
 					<ArrowUpDownIcon className='size-3.5' />
@@ -175,9 +167,7 @@ export function getColumns(config: ColumnsConfig): ColumnDef<InventoryItemWithCa
 					variant='ghost'
 					size='sm'
 					className='-ml-3'
-					onClick={() =>
-						column.toggleSorting(column.getIsSorted() === 'asc')
-					}
+					onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 				>
 					{t('col_price', { currency: 'USD' })}
 					<ArrowUpDownIcon className='size-3.5' />
