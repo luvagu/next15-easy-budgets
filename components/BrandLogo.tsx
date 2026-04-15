@@ -5,7 +5,7 @@ export function BrandLogo() {
 	const t = useTranslations('navbar')
 
 	return (
-		<span className='flex items-center gap-2 font-semibold shrink-0 text-lg'>
+		<span className='flex items-center gap-2 font-semibold shrink-0 sm:text-lg'>
 			<HandCoins className='size-8' />
 			<span>{t('navbar_logo_guest')}</span>
 		</span>
