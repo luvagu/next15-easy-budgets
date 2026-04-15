@@ -10,6 +10,7 @@ import {
 	LoanEntryFields,
 } from '@/constants/types'
 import { defaultLocale } from '@/i18n/routing'
+import { routing } from '@/i18n/routing'
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -108,7 +109,21 @@ export function normalizeEntryName(word: string) {
  *   "n"  matches  "ñ"
  */
 export function foldDiacritics(str: string): string {
-	return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+	return str
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.toLowerCase()
+}
+
+export function formatUsd(
+	value: number,
+	locale?: (typeof routing.locales)[number],
+) {
+	return new Intl.NumberFormat(locale ?? 'en-US', {
+		style: 'currency',
+		currency: 'USD',
+		minimumFractionDigits: 2,
+	}).format(value)
 }
 
 export function getItemsParentKey(entryItem: FormEntryItemType) {

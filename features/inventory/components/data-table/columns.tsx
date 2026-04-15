@@ -18,7 +18,7 @@ import {
 	PackagePlusIcon,
 	TrashIcon,
 } from 'lucide-react'
-import { foldDiacritics } from '@/lib/utils'
+import { foldDiacritics, formatUsd } from '@/lib/utils'
 import type { InventoryItemWithCategory } from '../../types/inventory'
 
 type ColumnsConfig = {
@@ -27,14 +27,6 @@ type ColumnsConfig = {
 	onDelete: (item: InventoryItemWithCategory) => void
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	t: (key: any, values?: any) => string
-}
-
-function formatUsd(value: number) {
-	return new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
-		minimumFractionDigits: 2,
-	}).format(value)
 }
 
 export function getColumns(
