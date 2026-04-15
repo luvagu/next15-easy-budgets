@@ -29,8 +29,12 @@ import {
 } from '@/components/ui/tooltip'
 import { Field, FieldGroup } from '@/components/ui/field'
 import { toast } from 'sonner'
-import { getAddTodoSchema } from '@/schemas/entries'
-import { createTodo, deleteTodo, updateTodo } from '@/features/todos/actions/todos'
+import { getAddTodoSchema } from '@/features/shared/schemas/entries'
+import {
+	createTodo,
+	deleteTodo,
+	updateTodo,
+} from '@/features/todos/actions/todos'
 import { normalizeEntryName } from '@/lib/utils'
 import { Spinner } from '@/components/ui/spinner'
 import {
@@ -201,7 +205,7 @@ export function TodosClient({
 												placeholder={t(
 													voiceEnabled
 														? 'placeholder_say_todo'
-														: 'placeholder_add_todo'
+														: 'placeholder_add_todo',
 												)}
 												disabled={voiceEnabled}
 												autoComplete='off'
@@ -260,11 +264,11 @@ export function TodosClient({
 							key={todo.id}
 							variant={'outline'}
 							size={'sm'}
-							className='bg-card hover:bg-sky-50 has-[[aria-checked=true]]:border-sky-600 has-[[aria-checked=true]]:bg-sky-50 dark:has-[[aria-checked=true]]:border-sky-900 dark:has-[[aria-checked=true]]:bg-sky-950'
+							className='bg-card hover:bg-card/50 has-aria-checked:border-sky-600 has-aria-checked:bg-sky-50 dark:has-aria-checked:border-sky-900 dark:has-aria-checked:bg-sky-950'
 						>
 							<ItemContent>
 								<Label
-									className='flex items-center gap-3 has-[[aria-checked=true]]:[&>p]:line-through has-[[aria-checked=true]]:[&>p]:decoration-2 has-[[aria-checked=true]]:[&>p]:decoration-sky-600'
+									className='flex items-center gap-3 has-aria-checked:[&>p]:line-through has-aria-checked:[&>p]:decoration-2 has-aria-checked:[&>p]:decoration-sky-600'
 									htmlFor={todo.id}
 								>
 									{isUpdating && currentTaskId === todo.id ? (
