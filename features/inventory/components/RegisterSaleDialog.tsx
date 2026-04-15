@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import { useForm, useFieldArray, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -47,6 +47,7 @@ interface RegisterSaleDialogProps {
 	onOpenChange: (open: boolean) => void
 	selectedItems: InventoryItemWithCategory[]
 	onSuccess: () => void
+	onItemRemoved?: (itemId: string) => void
 }
 
 function formatUsd(value: number) {
@@ -62,11 +63,16 @@ export function RegisterSaleDialog({
 	onOpenChange,
 	selectedItems,
 	onSuccess,
+	onItemRemoved,
 }: RegisterSaleDialogProps) {
 	const t = useTranslations('inventory')
 	const tForms = useTranslations('forms')
-	const SaleSchema = getSaleInvoiceSchema(tForms('required'), t('error_sale_at_least_one_item'))
+	const SaleSchema = getSaleInvoiceSchema(
+		tForms('required'),
+		t('error_sale_at_least_one_item'),
+	)
 	const [isPending, startTransition] = useTransition()
+	const [showCalendar, setShowCalendar] = useState(false)
 
 	const tomorrow = () => {
 		const d = new Date()
@@ -183,7 +189,10 @@ export function RegisterSaleDialog({
 			: watchDiscountType === 'pct'
 				? subtotal * ((watchDiscountValue ?? 0) / 100)
 				: Math.min(watchDiscountValue ?? 0, subtotal)
-	const grandTotal = Math.max(0, subtotal + (watchDelivery ?? 0) - discountAmount)
+	const grandTotal = Math.max(
+		0,
+		subtotal + (watchDelivery ?? 0) - discountAmount,
+	)
 
 	const onSubmit = (data: SaleFormValues) => {
 		startTransition(async () => {
@@ -264,7 +273,10 @@ export function RegisterSaleDialog({
 														type='button'
 														variant='ghost'
 														size='icon-sm'
-														onClick={() => remove(index)}
+														onClick={() => {
+															onItemRemoved?.(field.itemId)
+															remove(index)
+														}}
 													>
 														<TrashIcon className='size-3.5 text-destructive' />
 													</Button>
@@ -352,70 +364,17 @@ export function RegisterSaleDialog({
 
 							{/* Delivery + Discount — equal columns */}
 							<div className='grid grid-cols-2 gap-3'>
-							<FormField
-								control={form.control}
-								name='deliveryChargeUsd'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t('label_delivery_usd')}</FormLabel>
-										<FormControl>
-											<Input
-												type='number'
-												step='0.01'
-												min='0'
-												className='[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-												{...field}
-												onChange={e =>
-													field.onChange(parseFloat(e.target.value) || 0)
-												}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							{/* Discount */}
-							<FormField
-								control={form.control}
-								name='discountValue'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t('label_discount')}</FormLabel>
-										<div className='flex gap-1.5'>
-											{/* type toggle */}
-											<div className='flex rounded-md border overflow-hidden shrink-0'>
-												<button
-													type='button'
-													onClick={() => form.setValue('discountType', 'pct')}
-													className={cn(
-														'px-2.5 py-1.5 text-xs font-medium transition-colors',
-														watchDiscountType === 'pct'
-															? 'bg-primary text-primary-foreground'
-															: 'text-muted-foreground hover:bg-muted',
-													)}
-												>
-													%
-												</button>
-												<button
-													type='button'
-													onClick={() => form.setValue('discountType', 'fixed')}
-													className={cn(
-														'px-2.5 py-1.5 text-xs font-medium transition-colors',
-														watchDiscountType === 'fixed'
-															? 'bg-primary text-primary-foreground'
-															: 'text-muted-foreground hover:bg-muted',
-													)}
-												>
-													$
-												</button>
-											</div>
+								<FormField
+									control={form.control}
+									name='deliveryChargeUsd'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t('label_delivery_usd')}</FormLabel>
 											<FormControl>
 												<Input
 													type='number'
-													step={watchDiscountType === 'pct' ? '1' : '0.01'}
+													step='0.01'
 													min='0'
-													max={watchDiscountType === 'pct' ? '100' : undefined}
 													className='[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 													{...field}
 													onChange={e =>
@@ -423,12 +382,70 @@ export function RegisterSaleDialog({
 													}
 												/>
 											</FormControl>
-										</div>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							</div>{/* end delivery + discount grid */}
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+
+								{/* Discount */}
+								<FormField
+									control={form.control}
+									name='discountValue'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t('label_discount')}</FormLabel>
+											<div className='flex gap-1.5'>
+												{/* type toggle */}
+												<div className='flex rounded-md border overflow-hidden shrink-0'>
+													<button
+														type='button'
+														onClick={() => form.setValue('discountType', 'pct')}
+														className={cn(
+															'px-2.5 py-1.5 text-xs font-medium transition-colors',
+															watchDiscountType === 'pct'
+																? 'bg-primary text-primary-foreground'
+																: 'text-muted-foreground hover:bg-muted',
+														)}
+													>
+														%
+													</button>
+													<button
+														type='button'
+														onClick={() =>
+															form.setValue('discountType', 'fixed')
+														}
+														className={cn(
+															'px-2.5 py-1.5 text-xs font-medium transition-colors',
+															watchDiscountType === 'fixed'
+																? 'bg-primary text-primary-foreground'
+																: 'text-muted-foreground hover:bg-muted',
+														)}
+													>
+														$
+													</button>
+												</div>
+												<FormControl>
+													<Input
+														type='number'
+														step={watchDiscountType === 'pct' ? '1' : '0.01'}
+														min='0'
+														max={
+															watchDiscountType === 'pct' ? '100' : undefined
+														}
+														className='[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+														{...field}
+														onChange={e =>
+															field.onChange(parseFloat(e.target.value) || 0)
+														}
+													/>
+												</FormControl>
+											</div>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+							{/* end delivery + discount grid */}
 
 							{/* Credit Sale toggle */}
 							<FormField
@@ -462,7 +479,10 @@ export function RegisterSaleDialog({
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>{t('label_due_date')}</FormLabel>
-											<Popover>
+											<Popover
+												open={showCalendar}
+												onOpenChange={setShowCalendar}
+											>
 												<PopoverTrigger asChild>
 													<FormControl>
 														<Button
@@ -483,7 +503,10 @@ export function RegisterSaleDialog({
 													<Calendar
 														mode='single'
 														selected={field.value}
-														onSelect={field.onChange}
+														onSelect={e => {
+															field.onChange(e)
+															setShowCalendar(false)
+														}}
 														disabled={date => date < new Date()}
 													/>
 												</PopoverContent>
@@ -518,7 +541,8 @@ export function RegisterSaleDialog({
 									<div className='flex justify-between text-green-600 dark:text-green-400'>
 										<span>
 											{t('label_discount')}
-											{watchDiscountType === 'pct' && ` (${watchDiscountValue}%)`}
+											{watchDiscountType === 'pct' &&
+												` (${watchDiscountValue}%)`}
 										</span>
 										<span className='tabular-nums'>
 											−{formatUsd(discountAmount)}

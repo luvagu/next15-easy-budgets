@@ -98,6 +98,19 @@ export function normalizeEntryName(word: string) {
 	return tokens.join(' ')
 }
 
+/**
+ * Folds diacritical marks so search is accent-insensitive.
+ * NFD decomposes 'á' → 'a' + combining acute (U+0301); stripping the
+ * combining range (U+0300–U+036F) leaves the base letter.
+ * Apply to both the query and the haystack for bidirectional matching:
+ *   "a"  matches  "á", "à", "â" …
+ *   "á"  matches  "a", "á" …
+ *   "n"  matches  "ñ"
+ */
+export function foldDiacritics(str: string): string {
+	return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+}
+
 export function getItemsParentKey(entryItem: FormEntryItemType) {
 	return entryItem === ENTRY_TYPES.EXPENSE
 		? ENTRY_TYPES.BUDGET

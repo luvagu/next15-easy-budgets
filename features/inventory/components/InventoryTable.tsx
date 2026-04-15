@@ -142,6 +142,14 @@ export function InventoryTable({
 		setRowSelection({})
 	}
 
+	const handleSaleItemRemoved = (itemId: string) => {
+		setRowSelection(prev => {
+			const next = { ...prev }
+			delete next[itemId]
+			return next
+		})
+	}
+
 	const handleDelete = async (item: InventoryItemWithCategory) => {
 		const result = await deleteItem(item.id)
 		if (result.error) {
@@ -168,6 +176,8 @@ export function InventoryTable({
 	const table = useReactTable({
 		data: items,
 		columns,
+		// Use the item's stable UUID so selection survives filter/sort changes
+		getRowId: row => row.id,
 		state: {
 			sorting,
 			columnFilters,
@@ -345,6 +355,7 @@ export function InventoryTable({
 				onOpenChange={setSaleDialogOpen}
 				selectedItems={selectedRows}
 				onSuccess={handleSaleSuccess}
+				onItemRemoved={handleSaleItemRemoved}
 			/>
 
 			<BulkUploadDialog

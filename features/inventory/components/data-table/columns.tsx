@@ -18,6 +18,7 @@ import {
 	PackagePlusIcon,
 	TrashIcon,
 } from 'lucide-react'
+import { foldDiacritics } from '@/lib/utils'
 import type { InventoryItemWithCategory } from '../../types/inventory'
 
 type ColumnsConfig = {
@@ -99,10 +100,10 @@ export function getColumns(
 			},
 			filterFn: (row, _columnId, filterValue: string) => {
 				const item = row.original
-				const search = filterValue.toLowerCase()
+				const query = foldDiacritics(filterValue)
 				return (
-					item.name.toLowerCase().includes(search) ||
-					(item.brand?.toLowerCase().includes(search) ?? false)
+					foldDiacritics(item.name).includes(query) ||
+					(item.brand ? foldDiacritics(item.brand).includes(query) : false)
 				)
 			},
 		},
