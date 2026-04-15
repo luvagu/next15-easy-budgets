@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { normalizeEntryName } from '@/lib/utils'
 import { ENTRY_TYPES, CreateEntryItem } from '@/constants/types'
-import { getEntryItemSchema } from '@/schemas/entries'
+import { getEntryItemSchema } from '@/features/shared/schemas/entries'
 import { createExpense } from '@/features/budgets/actions/budgets'
 import { createInstallment } from '@/features/loans/actions/loans'
 

@@ -29,8 +29,7 @@ import { getAddStockSchema } from '../schemas/inventory'
 import { addStock } from '../actions/items'
 import type { InventoryItemWithCategory } from '../types/inventory'
 
-const StockSchema = getAddStockSchema()
-type StockFormValues = z.infer<typeof StockSchema>
+type StockFormValues = z.infer<ReturnType<typeof getAddStockSchema>>
 
 interface AddStockDialogProps {
 	open: boolean
@@ -46,6 +45,8 @@ export function AddStockDialog({
 	onSuccess,
 }: AddStockDialogProps) {
 	const t = useTranslations('inventory')
+	const tForms = useTranslations('forms')
+	const StockSchema = getAddStockSchema(tForms('required'))
 	const [isPending, startTransition] = useTransition()
 
 	const form = useForm<StockFormValues>({

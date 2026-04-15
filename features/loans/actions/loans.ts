@@ -5,7 +5,7 @@ import {
 	getEntryItemSchema,
 	getEntryItemsSchema,
 	getMoveItemsSchema,
-} from '@/schemas/entries'
+} from '@/features/shared/schemas/entries'
 import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import {
@@ -66,7 +66,7 @@ export async function createLoan(unsafeData: z.infer<typeof LoanEntrySchema>) {
 
 export async function updateLoan(
 	id: string,
-	unsafeData: z.infer<typeof LoanEntrySchema>
+	unsafeData: z.infer<typeof LoanEntrySchema>,
 ): Promise<{ error: boolean; message: string; reason?: string } | undefined> {
 	const { userId } = await auth()
 	const t = await getTranslations('server_messages')
@@ -120,7 +120,7 @@ export async function deleteLoan(id: string) {
 
 export async function createInstallment(
 	unsafeData: z.infer<typeof EntryItemSchema>,
-	parentId: string
+	parentId: string,
 ): Promise<{ error: boolean; message: string } | undefined> {
 	const { userId } = await auth()
 	const locale = await getLocale()
@@ -178,7 +178,7 @@ export async function deleteInstallment({
 
 export async function updateLoanInstallments(
 	parentId: string,
-	unsafeData: z.infer<typeof UpdateEntryItemsSchema>
+	unsafeData: z.infer<typeof UpdateEntryItemsSchema>,
 ) {
 	const { userId } = await auth()
 	const t = await getTranslations('server_messages')

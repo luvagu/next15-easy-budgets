@@ -44,10 +44,8 @@ import { Separator } from '@/components/ui/separator'
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { ENTRY_TYPES, MoveEntryItemsForm } from '@/constants/types'
-import { getMoveItemsSchema } from '@/schemas/entries'
-import {
-	moveBudgetExpenses,
-} from '@/features/budgets/actions/budgets'
+import { getMoveItemsSchema } from '@/features/shared/schemas/entries'
+import { moveBudgetExpenses } from '@/features/budgets/actions/budgets'
 import { moveLoanInstallments } from '@/features/loans/actions/loans'
 
 export function MoveEntryItems({

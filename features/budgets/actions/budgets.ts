@@ -5,7 +5,7 @@ import {
 	getEntryItemSchema,
 	getEntryItemsSchema,
 	getMoveItemsSchema,
-} from '@/schemas/entries'
+} from '@/features/shared/schemas/entries'
 import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import {
@@ -27,7 +27,7 @@ const UpdateEntryItemsSchema = getEntryItemsSchema()
 const MoveItemsSchema = getMoveItemsSchema({})
 
 export async function createBudget(
-	unsafeData: z.infer<typeof BudgetEntrySchema>
+	unsafeData: z.infer<typeof BudgetEntrySchema>,
 ): Promise<{ error: boolean; message: string; reason?: string } | undefined> {
 	const { userId } = await auth()
 	const locale = await getLocale()
@@ -61,7 +61,7 @@ export async function createBudget(
 
 	if (newBudget != null) {
 		redirect(
-			`/${locale}/dashboard/budget/${newBudget.id}/edit?tab=${TABS.DETAILS}`
+			`/${locale}/dashboard/budget/${newBudget.id}/edit?tab=${TABS.DETAILS}`,
 		)
 	} else {
 		redirect(`/${locale}/dashboard?tab=${TABS.BUDGETS}`)
@@ -70,7 +70,7 @@ export async function createBudget(
 
 export async function updateBudget(
 	id: string,
-	unsafeData: z.infer<typeof BudgetEntrySchema>
+	unsafeData: z.infer<typeof BudgetEntrySchema>,
 ): Promise<{ error: boolean; message: string; reason?: string } | undefined> {
 	const { userId } = await auth()
 	const t = await getTranslations('server_messages')
@@ -124,7 +124,7 @@ export async function deleteBudget(id: string) {
 
 export async function createExpense(
 	unsafeData: z.infer<typeof EntryItemSchema>,
-	parentId: string
+	parentId: string,
 ): Promise<{ error: boolean; message: string } | undefined> {
 	const { userId } = await auth()
 	const locale = await getLocale()
@@ -182,7 +182,7 @@ export async function deleteExpense({
 
 export async function updateBudgetExpenses(
 	parentId: string,
-	unsafeData: z.infer<typeof UpdateEntryItemsSchema>
+	unsafeData: z.infer<typeof UpdateEntryItemsSchema>,
 ) {
 	const { userId } = await auth()
 	const t = await getTranslations('server_messages')

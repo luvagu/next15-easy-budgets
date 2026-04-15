@@ -26,7 +26,7 @@ import { db } from '@/drizzle/db'
 import { and, eq, sql } from 'drizzle-orm'
 import { findOrCreateCategory as findOrCreateCategoryDB } from '../db/categories'
 
-const ItemSchema = getInventoryItemSchema()
+const ItemSchema = getInventoryItemSchema({})
 const StockSchema = getAddStockSchema()
 
 // ─── CREATE / UPDATE / DELETE ────────────────────────────────────

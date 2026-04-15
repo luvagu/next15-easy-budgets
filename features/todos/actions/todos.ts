@@ -1,6 +1,6 @@
 'use server'
 
-import { getAddTodoSchema } from '@/schemas/entries'
+import { getAddTodoSchema } from '@/features/shared/schemas/entries'
 import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import { getTranslations } from 'next-intl/server'
@@ -15,7 +15,7 @@ const AddTodoSchema = getAddTodoSchema()
 const PartialAddTodoSchema = AddTodoSchema.partial()
 
 export async function createTodo(
-	unsafeData: z.infer<typeof AddTodoSchema>
+	unsafeData: z.infer<typeof AddTodoSchema>,
 ): Promise<{ error: boolean; message: string }> {
 	const { userId } = await auth()
 	const t = await getTranslations('server_messages')
@@ -53,7 +53,7 @@ export async function createTodo(
 					'Neon Database Error:',
 					error.message,
 					'Code:',
-					error.cause.code
+					error.cause.code,
 				)
 			}
 		}
@@ -67,7 +67,7 @@ export async function createTodo(
 
 export async function updateTodo(
 	id: string,
-	unsafeData: z.infer<typeof PartialAddTodoSchema>
+	unsafeData: z.infer<typeof PartialAddTodoSchema>,
 ): Promise<{ error: boolean; message: string }> {
 	const { userId } = await auth()
 	const t = await getTranslations('server_messages')
@@ -94,7 +94,7 @@ export async function updateTodo(
 }
 
 export async function deleteTodo(
-	id: string
+	id: string,
 ): Promise<{ error: boolean; message: string }> {
 	const { userId } = await auth()
 	const t = await getTranslations('server_messages')

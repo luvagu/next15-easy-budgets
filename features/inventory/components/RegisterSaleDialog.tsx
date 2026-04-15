@@ -40,8 +40,7 @@ import { getSaleInvoiceSchema } from '../schemas/inventory'
 import { registerSale } from '../actions/invoices'
 import type { InventoryItemWithCategory } from '../types/inventory'
 
-const SaleSchema = getSaleInvoiceSchema()
-type SaleFormValues = z.infer<typeof SaleSchema>
+type SaleFormValues = z.infer<ReturnType<typeof getSaleInvoiceSchema>>
 
 interface RegisterSaleDialogProps {
 	open: boolean
@@ -65,6 +64,8 @@ export function RegisterSaleDialog({
 	onSuccess,
 }: RegisterSaleDialogProps) {
 	const t = useTranslations('inventory')
+	const tForms = useTranslations('forms')
+	const SaleSchema = getSaleInvoiceSchema(tForms('required'), t('error_sale_at_least_one_item'))
 	const [isPending, startTransition] = useTransition()
 
 	const tomorrow = () => {

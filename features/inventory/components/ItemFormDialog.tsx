@@ -32,8 +32,7 @@ import { addOrUpdateItem } from '../actions/items'
 import { CreatableCombobox } from './CreatableCombobox'
 import type { InventoryItemWithCategory } from '../types/inventory'
 
-const ItemSchema = getInventoryItemSchema()
-type ItemFormValues = z.infer<typeof ItemSchema>
+type ItemFormValues = z.infer<ReturnType<typeof getInventoryItemSchema>>
 
 interface ItemFormDialogProps {
 	open: boolean
@@ -53,6 +52,13 @@ export function ItemFormDialog({
 	onSuccess,
 }: ItemFormDialogProps) {
 	const t = useTranslations('inventory')
+	const tForms = useTranslations('forms')
+	const ItemSchema = getInventoryItemSchema({
+		required: tForms('required'),
+		comboFieldsTogether: t('error_combo_fields_together'),
+		comboPriceBelowCost: t('error_combo_price_below_cost'),
+		comboPriceAboveSale: t('error_combo_price_above_sale'),
+	})
 	const [isPending, startTransition] = useTransition()
 	const isEdit = !!editItem
 	const [comboPriceMode, setComboPriceMode] = useState<'usd' | 'pct'>('usd')
@@ -73,11 +79,18 @@ export function ItemFormDialog({
 		},
 	})
 
+	// Resets combo UI state and closes the dialog (handles ESC, outside-click, cancel, submit)
+	const handleOpenChange = (v: boolean) => {
+		if (!v) {
+			setComboPriceMode('usd')
+			setComboPctInput('')
+		}
+		onOpenChange(v)
+	}
+
 	// Reset form with fresh data every time dialog opens
 	useEffect(() => {
 		if (open) {
-			setComboPriceMode('usd')
-			setComboPctInput('')
 			form.reset(
 				editItem
 					? {
@@ -134,14 +147,14 @@ export function ItemFormDialog({
 					isEdit ? t('toast_item_updated') : t('toast_item_created'),
 				)
 				form.reset()
-				onOpenChange(false)
+				handleOpenChange(false)
 				onSuccess()
 			}
 		})
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className='flex flex-col sm:max-w-lg max-h-[90dvh] overflow-hidden gap-0 p-0'>
 				<DialogHeader className='px-6 pt-6 pb-4 shrink-0'>
 					<DialogTitle>
@@ -456,7 +469,7 @@ export function ItemFormDialog({
 								<Button
 									type='button'
 									variant='outline'
-									onClick={() => onOpenChange(false)}
+									onClick={() => handleOpenChange(false)}
 								>
 									{t('label_cancel')}
 								</Button>

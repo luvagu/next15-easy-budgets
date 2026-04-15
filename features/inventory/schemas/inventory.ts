@@ -2,7 +2,19 @@ import { z } from 'zod'
 
 // ─── Inventory Item (Add / Edit) ────────────────────────────────
 
-export const getInventoryItemSchema = (message = 'Required') =>
+type InventoryItemMessages = {
+	required?: string
+	comboFieldsTogether?: string
+	comboPriceBelowCost?: string
+	comboPriceAboveSale?: string
+}
+
+export const getInventoryItemSchema = ({
+	required: message = 'Required',
+	comboFieldsTogether = 'Both combo fields must be set together',
+	comboPriceBelowCost = 'Combo price cannot be below item cost (would sell at a loss)',
+	comboPriceAboveSale = 'Combo price must be less than the regular sale price (no discount)',
+}: InventoryItemMessages = {}) =>
 	z
 		.object({
 			name: z.string().min(3, message),
@@ -22,7 +34,7 @@ export const getInventoryItemSchema = (message = 'Required') =>
 				return hasThreshold === hasPrice
 			},
 			{
-				message: 'Both combo fields must be set together',
+				message: comboFieldsTogether,
 				path: ['comboPriceUsd'],
 			},
 		)
@@ -32,7 +44,7 @@ export const getInventoryItemSchema = (message = 'Required') =>
 				return data.comboPriceUsd >= data.baseCostUsd
 			},
 			{
-				message: 'Combo price cannot be below item cost (would sell at a loss)',
+				message: comboPriceBelowCost,
 				path: ['comboPriceUsd'],
 			},
 		)
@@ -43,8 +55,7 @@ export const getInventoryItemSchema = (message = 'Required') =>
 				return data.comboPriceUsd < regularPrice
 			},
 			{
-				message:
-					'Combo price must be less than the regular sale price (no discount)',
+				message: comboPriceAboveSale,
 				path: ['comboPriceUsd'],
 			},
 		)
@@ -63,7 +74,10 @@ export type AddStockSchema = ReturnType<typeof getAddStockSchema>
 
 // ─── Register Sale (Invoice) ────────────────────────────────────
 
-export const getSaleInvoiceSchema = (message = 'Required') =>
+export const getSaleInvoiceSchema = (
+	message = 'Required',
+	minItemsMessage = 'At least one item required',
+) =>
 	z
 		.object({
 			customerName: z.string().min(1, message),
@@ -79,7 +93,7 @@ export const getSaleInvoiceSchema = (message = 'Required') =>
 						qty: z.number().int().positive(message),
 					}),
 				)
-				.min(1, 'At least one item required'),
+				.min(1, minItemsMessage),
 		})
 		.superRefine((data, ctx) => {
 			if (data.isCreditSale && !data.paymentDueDate) {

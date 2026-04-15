@@ -99,7 +99,6 @@ export function ManageTaxonomyDialog({
 			loadCategories()
 			loadBrands()
 		}
-	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [open])
 
 	// ─── Category handlers ────────────────────────────────────────
