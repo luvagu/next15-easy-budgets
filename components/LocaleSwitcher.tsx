@@ -20,7 +20,7 @@ export function LocaleSwitcher() {
 	const pathname = usePathname()
 	const [isPending, startTransition] = useTransition()
 
-	function handleLocaleChange(nextLocale: string) {
+	function handleLocaleChange(nextLocale: (typeof routing.locales)[number]) {
 		startTransition(() => {
 			router.replace(pathname, {
 				locale: nextLocale,
