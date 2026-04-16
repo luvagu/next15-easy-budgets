@@ -5,10 +5,12 @@ import { env } from '@/data/env/server'
 import { deleteUser } from '@/features/users/db/users'
 import { NextRequest } from 'next/server'
 
-export async function POST(req: NextRequest) {
-	// Test route
-	// return Response.json({ message: 'The route is working' })
+// Test route
+// export async function GET() {
+// 	return Response.json({ message: 'The route is working' })
+// }
 
+export async function POST(req: NextRequest) {
 	const headerPayload = await headers()
 	const svixId = headerPayload.get('svix-id')
 	const svixTimestamp = headerPayload.get('svix-timestamp')
@@ -40,8 +42,22 @@ export async function POST(req: NextRequest) {
 
 	switch (event.type) {
 		case 'user.deleted': {
-			if (event.data.id != null) {
-				await deleteUser(event.data.id)
+			const clerkUserId = event.data.id
+			if (clerkUserId != null) {
+				try {
+					const deletedRows = await deleteUser(clerkUserId)
+					// eslint-disable-next-line no-console
+					console.log(
+						`@@ User with clerkUserId=${clerkUserId} deleted. Number of rows deleted:`,
+						deletedRows,
+					)
+				} catch (error) {
+					// eslint-disable-next-line no-console
+					console.log(
+						`@@ Error deleting User with clerkUserId=${clerkUserId}:`,
+						error,
+					)
+				}
 			}
 			break
 		}
