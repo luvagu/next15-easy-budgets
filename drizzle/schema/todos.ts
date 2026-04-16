@@ -6,10 +6,10 @@ export const TodosTable = pgTable(
 	{
 		id,
 		clerkUserId: text().notNull(),
-		name: text().notNull().unique(),
+		name: text().notNull(),
 		completed: boolean().notNull().default(false),
 		createdAt,
 		updatedAt,
 	},
-	table => [index('todos.clerk_user_id_index').on(table.clerkUserId)]
+	table => [index('todos.clerk_user_id_index').on(table.clerkUserId)],
 )

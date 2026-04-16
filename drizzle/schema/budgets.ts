@@ -8,7 +8,7 @@ export const BudgetsTable = pgTable(
 	{
 		id,
 		clerkUserId: text('clerk_user_id').notNull(),
-		name: text('name').notNull().unique(),
+		name: text('name').notNull(),
 		totalQuota: real('total_quota').notNull(),
 		bgColor: text('bg_color').$type<CardBgColors>().notNull(),
 		expensesTotal: real('expenses_total').default(0),
@@ -16,7 +16,7 @@ export const BudgetsTable = pgTable(
 		createdAt,
 		updatedAt,
 	},
-	table => [index('budgets.clerk_user_id_index').on(table.clerkUserId)]
+	table => [index('budgets.clerk_user_id_index').on(table.clerkUserId)],
 )
 
 export const budgetsRelations = relations(BudgetsTable, ({ many }) => ({
@@ -35,7 +35,7 @@ export const ExpensesTable = pgTable(
 		createdAt,
 		updatedAt,
 	},
-	table => [index('expenses.parent_id_index').on(table.parentId)]
+	table => [index('expenses.parent_id_index').on(table.parentId)],
 )
 
 export const expensesRelations = relations(ExpensesTable, ({ one }) => ({

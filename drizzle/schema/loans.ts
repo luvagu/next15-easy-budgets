@@ -16,7 +16,7 @@ export const LoansTable = pgTable(
 	{
 		id,
 		clerkUserId: text('clerk_user_id').notNull(),
-		name: text('name').notNull().unique(),
+		name: text('name').notNull(),
 		totalDebt: real('total_debt').notNull(),
 		bgColor: text('bg_color').$type<CardBgColors>().notNull(),
 		isAgainst: boolean('is_against').notNull(),
