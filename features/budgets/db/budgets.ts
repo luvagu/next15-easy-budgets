@@ -15,7 +15,7 @@ import { BatchItem } from 'drizzle-orm/batch'
 export async function createBudget(data: typeof BudgetsTable.$inferInsert) {
 	const [newBudget] = await db
 		.insert(BudgetsTable)
-		.values(data)
+		.values({ ...data, availableQuota: data.totalQuota })
 		.returning({ id: BudgetsTable.id, userId: BudgetsTable.clerkUserId })
 
 	revalidateBudgetsCache(newBudget)
@@ -25,7 +25,7 @@ export async function createBudget(data: typeof BudgetsTable.$inferInsert) {
 
 export async function updateBudget(
 	data: Partial<typeof BudgetsTable.$inferInsert>,
-	{ id, userId }: { id: string; userId: string }
+	{ id, userId }: { id: string; userId: string },
 ) {
 	const { rowCount } = await db
 		.update(BudgetsTable)
@@ -104,7 +104,7 @@ export async function getBudget({
 
 export async function getBudgets(
 	userId: string,
-	{ limit }: { limit?: number } = {}
+	{ limit }: { limit?: number } = {},
 ) {
 	'use cache'
 
@@ -119,7 +119,7 @@ export async function getBudgets(
 
 export async function createExpense(
 	data: typeof ExpensesTable.$inferInsert,
-	{ userId }: { userId: string }
+	{ userId }: { userId: string },
 ) {
 	const budget = await getBudget({ id: data.parentId, userId })
 
@@ -177,7 +177,7 @@ export async function deleteExpense({
 
 export async function updateBudgetExpenses(
 	expenses: Partial<typeof ExpensesTable.$inferInsert>[],
-	{ parentId, userId }: { parentId: string; userId: string }
+	{ parentId, userId }: { parentId: string; userId: string },
 ) {
 	const budget = await getBudget({ id: parentId, userId })
 
@@ -195,9 +195,9 @@ export async function updateBudgetExpenses(
 						.where(
 							and(
 								eq(ExpensesTable.id, expense.id),
-								eq(ExpensesTable.parentId, parentId)
-							)
-						)
+								eq(ExpensesTable.parentId, parentId),
+							),
+						),
 				)
 			}
 		})
@@ -254,9 +254,9 @@ export async function moveBudgetExpenses({
 					.where(
 						and(
 							eq(ExpensesTable.id, expense.id),
-							eq(ExpensesTable.parentId, oldParentId)
-						)
-					)
+							eq(ExpensesTable.parentId, oldParentId),
+						),
+					),
 			)
 		}
 	})
@@ -313,7 +313,10 @@ export async function recalculateBudgetTotals({
 			.select({ totalQuota: BudgetsTable.totalQuota })
 			.from(BudgetsTable)
 			.where(
-				and(eq(BudgetsTable.clerkUserId, userId), eq(BudgetsTable.id, parentId))
+				and(
+					eq(BudgetsTable.clerkUserId, userId),
+					eq(BudgetsTable.id, parentId),
+				),
 			)
 
 		const availableQuota = (budget?.totalQuota ?? 0) - expensesTotal
@@ -326,7 +329,10 @@ export async function recalculateBudgetTotals({
 				availableQuota,
 			})
 			.where(
-				and(eq(BudgetsTable.clerkUserId, userId), eq(BudgetsTable.id, parentId))
+				and(
+					eq(BudgetsTable.clerkUserId, userId),
+					eq(BudgetsTable.id, parentId),
+				),
 			)
 
 		// 4. Revalidate cache

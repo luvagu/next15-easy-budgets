@@ -359,7 +359,7 @@ function EntryCard({
 						<DeleteEntryAlertDialog type={type} id={id} />
 					</AlertDialog>
 				</div>
-				{isLoan && isPaid ? (
+				{isLoan && isPaid && (
 					<CardDescription className='flex items-center gap-1.5'>
 						<Badge
 							variant='outline'
@@ -369,10 +369,15 @@ function EntryCard({
 							{t('label_loan_paid')}
 						</Badge>
 					</CardDescription>
-				) : isLoan && dueDate ? (
+				)}
+				{isLoan && dueDate && (
 					<CardDescription
 						className={`flex items-center gap-1.5 ${
-							isOverdue ? 'text-red-600' : isDueToday ? 'text-amber-600' : ''
+							isOverdue
+								? 'text-destructive'
+								: isDueToday
+									? 'text-amber-600 dark:text-amber-500'
+									: 'text-secondary-foreground'
 						}`}
 					>
 						<CalendarClockIcon className='h-4 w-4' />
@@ -391,7 +396,7 @@ function EntryCard({
 							</Badge>
 						)}
 					</CardDescription>
-				) : null}
+				)}
 			</CardHeader>
 			<EntryProgress type={type} entryData={entryData} />
 		</Card>

@@ -4,6 +4,7 @@ import {
 	integer,
 	pgTable,
 	real,
+	serial,
 	text,
 	timestamp,
 	unique,
@@ -71,6 +72,7 @@ export const SalesInvoicesTable = pgTable(
 	'sales_invoices',
 	{
 		id,
+		invoiceNumber: serial('invoice_number').notNull(),
 		clerkUserId: text('clerk_user_id').notNull(),
 		customerName: text('customer_name').notNull(),
 		subtotalUsd: real('subtotal_usd').notNull(),

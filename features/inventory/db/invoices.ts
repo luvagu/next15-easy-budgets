@@ -15,6 +15,9 @@ import {
 } from './cache'
 import { revalidateInventoryCache } from './cache'
 import { revalidateLoansCache } from '@/features/loans/db/cache'
+import { createLoan, deleteLoan, updateLoan } from '@/features/loans/db/loans'
+import { INVOICE_NUM_PREFIX } from '../constants/constants'
+import { capitalizeCustomerName } from '@/lib/utils'
 
 type SaleLineItemInput = {
 	itemId: string
@@ -106,37 +109,43 @@ export async function registerSale({
 		subtotalUsd + deliveryChargeUsd - discountAmountUsd,
 	)
 
-	// 5. Optionally create a Loan entry (deferred payment) — needs returning ID
-	let loanId: string | null = null
-	if (isCreditSale) {
-		const [newLoan] = await db
-			.insert(LoansTable)
-			.values({
-				clerkUserId: userId,
-				name: `HB: ${customerName}`,
-				totalDebt: totalAmountUsd,
-				bgColor: 'emerald',
-				isAgainst: false,
-				dueDate: paymentDueDate,
-			})
-			.returning({ id: LoansTable.id })
-		loanId = newLoan.id
-	}
-
-	// 6. Insert invoice — needs returning ID for line items
+	// 5. Insert invoice first — we need invoiceNumber before creating the loan
 	const [invoice] = await db
 		.insert(SalesInvoicesTable)
 		.values({
 			clerkUserId: userId,
-			customerName,
+			customerName: capitalizeCustomerName(customerName),
 			subtotalUsd,
 			deliveryChargeUsd,
 			discountType: discountValue > 0 ? discountType : null,
 			discountAmountUsd,
 			totalAmountUsd,
-			loanId,
 		})
-		.returning({ id: SalesInvoicesTable.id })
+		.returning({
+			id: SalesInvoicesTable.id,
+			invoiceNumber: SalesInvoicesTable.invoiceNumber,
+		})
+
+	// 6. Optionally create a Loan entry (deferred payment) using the invoice number
+	let loanId: string | null = null
+	if (isCreditSale) {
+		const newLoan = await createLoan({
+			clerkUserId: userId,
+			name: `${INVOICE_NUM_PREFIX}${invoice.invoiceNumber}: ${capitalizeCustomerName(customerName)}`,
+			totalDebt: totalAmountUsd,
+			bgColor: 'emerald',
+			isAgainst: false,
+			dueDate: paymentDueDate,
+		})
+
+		loanId = newLoan.id
+
+		// Link the loan back to the invoice
+		await db
+			.update(SalesInvoicesTable)
+			.set({ loanId })
+			.where(eq(SalesInvoicesTable.id, invoice.id))
+	}
 
 	// 7. Batch: insert all line items + decrement all stock in one round-trip
 	const lineItemInsert = db.insert(SaleLineItemsTable).values(
@@ -216,8 +225,7 @@ export async function cancelSale({
 
 	// 4. Delete linked loan if present
 	if (invoice.loanId) {
-		await db.delete(LoansTable).where(eq(LoansTable.id, invoice.loanId))
-		revalidateLoansCache({ id: invoice.loanId, userId })
+		await deleteLoan({ id: invoice.loanId, userId })
 	}
 
 	// 5. Revalidate
@@ -247,7 +255,8 @@ export async function processReturn({
 	})
 
 	if (!invoice) throw new Error('Invoice not found')
-	if (invoice.status === 'cancelled') throw new Error('Invoice already cancelled')
+	if (invoice.status === 'cancelled')
+		throw new Error('Invoice already cancelled')
 	if (items.length === 0) throw new Error('No items specified')
 
 	// 2. Validate each return line
@@ -338,8 +347,7 @@ export async function processReturn({
 	if (invoice.loanId) {
 		if (allFullyReturned) {
 			// Full cancellation — delete the loan entirely
-			await db.delete(LoansTable).where(eq(LoansTable.id, invoice.loanId))
-			revalidateLoansCache({ id: invoice.loanId, userId })
+			await deleteLoan({ id: invoice.loanId, userId })
 		} else {
 			// Partial return — reduce totalDebt to the new invoice total and
 			// recompute dueAmount using the same formula as recalculateLoanTotals:
@@ -352,16 +360,14 @@ export async function processReturn({
 			const installmensTotal = loanRow?.installmensTotal ?? 0
 			const newDueAmount = newTotalAmountUsd - installmensTotal
 
-			await db
-				.update(LoansTable)
-				.set({
+			await updateLoan(
+				{
 					totalDebt: newTotalAmountUsd,
 					dueAmount: newDueAmount,
 					updatedAt: new Date(),
-				})
-				.where(eq(LoansTable.id, invoice.loanId))
-
-			revalidateLoansCache({ id: invoice.loanId, userId })
+				},
+				{ id: invoice.loanId, userId },
+			)
 		}
 	}
 

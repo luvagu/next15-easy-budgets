@@ -20,7 +20,7 @@ import {
 	SalesInvoicesTable,
 } from '@/drizzle/schema'
 
-const SEED_USER_ID = process.env.SEED_USER_ID ?? 'YOUR_CLERK_USER_ID_HERE'
+const SEED_USER_ID = 'user_2vN71PKJ8iYbpmHXF6JuApigIxE'
 
 async function seed() {
 	console.log('🌱 Seeding inventory data...')

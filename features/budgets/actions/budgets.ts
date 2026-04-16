@@ -48,7 +48,6 @@ export async function createBudget(
 	try {
 		newBudget = await createBudgetDB({
 			...data,
-			availableQuota: data.totalQuota,
 			clerkUserId: userId,
 		})
 	} catch {

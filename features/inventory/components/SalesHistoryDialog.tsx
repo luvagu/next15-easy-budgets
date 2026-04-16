@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import { getSalesHistory } from '../actions/invoices'
 import { ReturnItemsDialog } from './ReturnItemsDialog'
 import type { InvoiceWithLineItems } from '../types/inventory'
+import { INVOICE_NUM_PREFIX } from '../constants/constants'
 
 interface SalesHistoryDialogProps {
 	open: boolean
@@ -127,10 +128,14 @@ export function SalesHistoryDialog({
 						) : (
 							invoices.map(inv => (
 								<div key={inv.id} className='rounded-md border p-3 space-y-1.5'>
-									{/* Row 1: customer · date · status */}
+									{/* Row 1: invoice id · customer · date · status */}
 									<div className='flex items-start justify-between gap-2'>
 										<div className='min-w-0'>
 											<p className='text-sm font-medium truncate'>
+												<span className='text-muted-foreground font-mono'>
+													{`${INVOICE_NUM_PREFIX}${inv.invoiceNumber}`}
+												</span>
+												{' · '}
 												{inv.customerName}
 											</p>
 											<p className='text-xs text-muted-foreground'>

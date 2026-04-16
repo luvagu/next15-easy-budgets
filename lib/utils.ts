@@ -99,6 +99,18 @@ export function normalizeEntryName(word: string) {
 	return tokens.join(' ')
 }
 
+export function capitalizeCustomerName(name: string) {
+	// handle empty input
+	if (!name) return ''
+
+	return name
+		.replace(/\s+/g, ' ')
+		.trim()
+		.split(' ')
+		.map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+		.join(' ')
+}
+
 /**
  * Folds diacritical marks so search is accent-insensitive.
  * NFD decomposes 'á' → 'a' + combining acute (U+0301); stripping the

@@ -15,7 +15,7 @@ import { BatchItem } from 'drizzle-orm/batch'
 export async function createLoan(data: typeof LoansTable.$inferInsert) {
 	const [newLoan] = await db
 		.insert(LoansTable)
-		.values(data)
+		.values({ ...data, dueAmount: data.totalDebt })
 		.returning({ id: LoansTable.id, userId: LoansTable.clerkUserId })
 
 	revalidateLoansCache(newLoan)
@@ -25,7 +25,7 @@ export async function createLoan(data: typeof LoansTable.$inferInsert) {
 
 export async function updateLoan(
 	data: Partial<typeof LoansTable.$inferInsert>,
-	{ id, userId }: { id: string; userId: string }
+	{ id, userId }: { id: string; userId: string },
 ) {
 	const { rowCount } = await db
 		.update(LoansTable)
@@ -103,7 +103,7 @@ export async function getLoan({ id, userId }: { id: string; userId: string }) {
 
 export async function getLoans(
 	userId: string,
-	{ limit }: { limit?: number } = {}
+	{ limit }: { limit?: number } = {},
 ) {
 	'use cache'
 
@@ -118,7 +118,7 @@ export async function getLoans(
 
 export async function createInstallment(
 	data: typeof InstallmentsTable.$inferInsert,
-	{ userId }: { userId: string }
+	{ userId }: { userId: string },
 ) {
 	const loan = await getLoan({ id: data.parentId, userId })
 
@@ -164,8 +164,8 @@ export async function deleteInstallment({
 		.where(
 			and(
 				eq(InstallmentsTable.id, id),
-				eq(InstallmentsTable.parentId, parentId)
-			)
+				eq(InstallmentsTable.parentId, parentId),
+			),
 		)
 
 	const isDeleted = rowCount > 0
@@ -184,7 +184,7 @@ export async function deleteInstallment({
 
 export async function updateLoanInstallments(
 	installments: (typeof InstallmentsTable.$inferInsert)[],
-	{ parentId, userId }: { parentId: string; userId: string }
+	{ parentId, userId }: { parentId: string; userId: string },
 ) {
 	const loan = await getLoan({ id: parentId, userId })
 
@@ -202,9 +202,9 @@ export async function updateLoanInstallments(
 						.where(
 							and(
 								eq(InstallmentsTable.id, installment.id),
-								eq(InstallmentsTable.parentId, parentId)
-							)
-						)
+								eq(InstallmentsTable.parentId, parentId),
+							),
+						),
 				)
 			}
 		})
@@ -261,9 +261,9 @@ export async function moveLoanInstallments({
 					.where(
 						and(
 							eq(InstallmentsTable.id, installment.id),
-							eq(InstallmentsTable.parentId, oldParentId)
-						)
-					)
+							eq(InstallmentsTable.parentId, oldParentId),
+						),
+					),
 			)
 		}
 	})
@@ -320,7 +320,7 @@ export async function recalculateLoanTotals({
 			.select({ totalDebt: LoansTable.totalDebt })
 			.from(LoansTable)
 			.where(
-				and(eq(LoansTable.clerkUserId, userId), eq(LoansTable.id, parentId))
+				and(eq(LoansTable.clerkUserId, userId), eq(LoansTable.id, parentId)),
 			)
 
 		const dueAmount = (loan?.totalDebt ?? 0) - installmensTotal
@@ -333,7 +333,7 @@ export async function recalculateLoanTotals({
 				dueAmount,
 			})
 			.where(
-				and(eq(LoansTable.clerkUserId, userId), eq(LoansTable.id, parentId))
+				and(eq(LoansTable.clerkUserId, userId), eq(LoansTable.id, parentId)),
 			)
 
 		// 4. Revalidate cache

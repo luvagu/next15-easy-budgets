@@ -46,7 +46,6 @@ export async function createLoan(unsafeData: z.infer<typeof LoanEntrySchema>) {
 	try {
 		newLoan = await createLoanDB({
 			...data,
-			dueAmount: data.totalDebt,
 			clerkUserId: userId,
 		})
 	} catch {
