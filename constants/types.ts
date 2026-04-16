@@ -1,30 +1,33 @@
 export const CARD_BG_COLORS = {
-	white: ['bg-muted dark:bg-muted', 'text-gray-700 dark:text-gray-300'],
+	white: [
+		'bg-muted dark:bg-muted-foreground/25',
+		'text-gray-700 dark:text-gray-300',
+	],
 	orange: [
-		'bg-orange-100 dark:bg-orange-900/75',
+		'bg-orange-100 dark:bg-orange-600/50',
 		'text-orange-700 dark:text-orange-300',
 	],
 	yellow: [
-		'bg-yellow-100 dark:bg-yellow-900/75',
+		'bg-yellow-100 dark:bg-yellow-600/50',
 		'text-yellow-700 dark:text-yellow-300',
 	],
-	lime: ['bg-lime-100 dark:bg-lime-900/75', 'text-lime-700 dark:text-lime-300'],
+	lime: ['bg-lime-100 dark:bg-lime-600/50', 'text-lime-700 dark:text-lime-300'],
 	emerald: [
-		'bg-emerald-100 dark:bg-emerald-900/75',
+		'bg-emerald-100 dark:bg-emerald-600/50',
 		'text-emerald-700 dark:text-emerald-300',
 	],
 	green: [
-		'bg-green-100 dark:bg-green-900/75',
+		'bg-green-100 dark:bg-green-600/50',
 		'text-green-700 dark:text-green-300',
 	],
-	cyan: ['bg-cyan-100 dark:bg-cyan-900/75', 'text-cyan-700 dark:text-cyan-300'],
-	sky: ['bg-sky-100 dark:bg-sky-900/75', 'text-sky-700 dark:text-sky-300'],
-	blue: ['bg-blue-100 dark:bg-blue-900/75', 'text-blue-700 dark:text-blue-300'],
+	cyan: ['bg-cyan-100 dark:bg-cyan-600/50', 'text-cyan-700 dark:text-cyan-300'],
+	sky: ['bg-sky-100 dark:bg-sky-600/50', 'text-sky-700 dark:text-sky-300'],
+	blue: ['bg-blue-100 dark:bg-blue-600/50', 'text-blue-700 dark:text-blue-300'],
 	violet: [
-		'bg-violet-100 dark:bg-violet-900/75',
+		'bg-violet-100 dark:bg-violet-600/50',
 		'text-violet-700 dark:text-violet-300',
 	],
-	pink: ['bg-pink-100 dark:bg-pink-900/75', 'text-pink-700 dark:text-pink-300'],
+	pink: ['bg-pink-100 dark:bg-pink-600/50', 'text-pink-700 dark:text-pink-300'],
 } as const
 
 export type CardBgColors = keyof typeof CARD_BG_COLORS
