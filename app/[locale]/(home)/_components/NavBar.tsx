@@ -20,9 +20,7 @@ export async function NavBar() {
 				</div>
 				<span className='sm:text-lg'>
 					<Show when='signed-out'>
-						<SignInButton>
-							<button className='cursor-pointer'>{t('label_login')}</button>
-						</SignInButton>
+						<SignInButton>{t('label_login')}</SignInButton>
 					</Show>
 					<Show when='signed-in'>
 						<Link href={'/dashboard'} className='mr-auto'>
