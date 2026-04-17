@@ -11,8 +11,13 @@
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
 		"db:push": "drizzle-kit push",
+		"db:drop": "drizzle-kit drop",
 		"db:fix-migrations": "tsx --env-file=.env drizzle/fix-migrations.ts",
-		"db:backfill-invoices": "tsx --env-file=.env features/inventory/seed/backfill-invoice-numbers.ts"
+		"db:backfill-invoices": "tsx --env-file=.env features/inventory/seed/backfill-invoice-numbers.ts",
+		"db:backup": "tsx --env-file=.env tasks/db-backup.ts",
+		"db:backup:schema": "tsx --env-file=.env tasks/db-backup.ts --schema",
+		"db:backup:data": "tsx --env-file=.env tasks/db-backup.ts --data",
+		"db:restore": "tsx --env-file=.env tasks/db-restore.ts"
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^7.0.8",

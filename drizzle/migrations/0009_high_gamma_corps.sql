@@ -1,1 +1,0 @@
-ALTER TABLE "sales_invoices" ADD COLUMN "invoice_number" serial NOT NULL;
