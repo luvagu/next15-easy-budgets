@@ -1,4 +1,4 @@
-import { PageWithBackButton } from '../../../_components/PageWithBackButton'
+import { PageWithBackButton } from '@/features/shared/components/PageWithBackButton'
 import { auth } from '@clerk/nextjs/server'
 import { getTranslations } from 'next-intl/server'
 import {
@@ -10,8 +10,8 @@ import {
 	BudgetEntryDetails,
 	LoanEntryDetails,
 } from '@/constants/types'
-import { LoanEntryForm } from '../../../_components/forms/LoanEntryForm'
-import { BudgetEntryForm } from '../../../_components/forms/BudgetEntryForm'
+import { LoanEntryForm } from '@/features/shared/components/forms/LoanEntryForm'
+import { BudgetEntryForm } from '@/features/shared/components/forms/BudgetEntryForm'
 import {
 	Card,
 	CardContent,
@@ -20,8 +20,8 @@ import {
 	CardTitle,
 } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { EntryItemsListForm } from '../../../_components/forms/EntryItemsListForm'
-import { EntryProgress } from '../../../_components/EntryProgress'
+import { EntryItemsListForm } from '@/features/shared/components/forms/EntryItemsListForm'
+import { EntryProgress } from '@/features/shared/components/EntryProgress'
 import { getCardClassNameBgColors } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Link } from '@/i18n/navigation'
@@ -112,7 +112,7 @@ export default async function EditEntryPage({
 				{entryData && (
 					<Card
 						className={`${getCardClassNameBgColors(
-							entryData.bgColor
+							entryData.bgColor,
 						)} py-5 gap-3`}
 					>
 						<EntryProgress type={entry} entryData={entryData} />

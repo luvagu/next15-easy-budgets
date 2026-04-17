@@ -7,7 +7,7 @@ import { getTranslations } from 'next-intl/server'
 import { routing } from '@/i18n/routing'
 import { notFound } from 'next/navigation'
 import { Toaster } from '@/components/ui/sonner'
-import { ThemeProvider } from '@/components/ThemeProvider'
+import { ThemeProvider } from '@/app/[locale]/_components/ThemeProvider'
 
 // ToDo: remove
 // import '@/features/inventory/seed/seed-inventory'

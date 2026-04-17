@@ -1,8 +1,8 @@
-import { BrandLogo } from '@/components/BrandLogo'
-import { LocaleSwitcher } from '@/components/LocaleSwitcher'
-import { ThemeToggle } from '@/components/ThemeToggle'
+import { BrandLogo } from '@/app/[locale]/_components/BrandLogo'
+import { LocaleSwitcher } from '@/app/[locale]/_components/LocaleSwitcher'
+import { ThemeToggle } from '@/app/[locale]/_components/ThemeToggle'
 import { Link } from '@/i18n/navigation'
-import { UserButton } from '@clerk/nextjs'
+import { Show, UserButton } from '@clerk/nextjs'
 
 export function NavBar() {
 	return (
@@ -15,7 +15,9 @@ export function NavBar() {
 					<LocaleSwitcher />
 					<ThemeToggle />
 				</div>
-				<UserButton />
+				<Show when='signed-in'>
+					<UserButton />
+				</Show>
 			</nav>
 		</header>
 	)

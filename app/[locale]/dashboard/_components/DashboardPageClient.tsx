@@ -1,10 +1,10 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { NoEntries } from './NoEntries'
-import { EntriesGrid } from './EntriesGrid'
-import { TodosClient } from './TodosClient'
-import { TabsWithHeader } from './TabsWithHeader'
+import { NoEntries } from '@/features/shared/components/NoEntries'
+import { EntriesGrid } from '@/features/shared/components/EntriesGrid'
+import { TodosClient } from '@/features/todos/components/TodosClient'
+import { TabsWithHeader } from '@/features/shared/components/TabsWithHeader'
 import { useSearchParams } from 'next/navigation'
 import {
 	DashboardPageProps,
@@ -16,7 +16,7 @@ import {
 } from '@/constants/types'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { getBudgetsSummary, getLoansSummary } from '@/lib/utils'
-import { InventoryTab } from '@/features/inventory/components/InventoryTab'
+import { InventoryClient } from '@/features/inventory/components/InventoryClient'
 
 export function DashboardPageClient({
 	budgets,
@@ -110,9 +110,7 @@ export function DashboardPageClient({
 			},
 			{
 				value: TABS.INVENTORY,
-				content: (
-					<InventoryTab />
-				),
+				content: <InventoryClient />,
 			},
 		],
 	}

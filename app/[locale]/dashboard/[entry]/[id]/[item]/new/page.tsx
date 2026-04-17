@@ -12,8 +12,8 @@ import {
 	FormEntryType,
 	TABS,
 } from '@/constants/types'
-import { PageWithBackButton } from '@/app/[locale]/dashboard/_components/PageWithBackButton'
-import { EntryItemForm } from '@/app/[locale]/dashboard/_components/forms/EntryItemForm'
+import { PageWithBackButton } from '@/features/shared/components/PageWithBackButton'
+import { EntryItemForm } from '@/features/shared/components/forms/EntryItemForm'
 import { getBudget } from '@/features/budgets/db/budgets'
 import { getLoan } from '@/features/loans/db/loans'
 import { auth } from '@clerk/nextjs/server'

@@ -11,7 +11,7 @@ import { Spinner } from '@/components/ui/spinner'
 
 type ExchangeRate = typeof ExchangeRatesCacheTable.$inferSelect
 
-export function InventoryTab() {
+export function InventoryClient() {
 	const [stats, setStats] = useState<DashboardStats | null>(null)
 	const [exchangeRates, setExchangeRates] = useState<ExchangeRate[]>([])
 	const [isLoading, startTransition] = useTransition()

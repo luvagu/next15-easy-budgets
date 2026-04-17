@@ -11,7 +11,7 @@ export default async function HomeLayoutPage() {
 			<h1 className='text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight m-4'>
 				{t('hero_welcome_header')}
 			</h1>
-			<p className='text-lg lg:text-3xl max-w-screen-xl'>
+			<p className='text-lg lg:text-3xl max-w-7xl'>
 				{t('hero_welcome_message')}
 			</p>
 			<Show when='signed-out'>

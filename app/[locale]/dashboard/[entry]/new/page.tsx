@@ -6,9 +6,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
-import { PageWithBackButton } from '../../_components/PageWithBackButton'
-import { BudgetEntryForm } from '../../_components/forms/BudgetEntryForm'
-import { LoanEntryForm } from '../../_components/forms/LoanEntryForm'
+import { PageWithBackButton } from '@/features/shared/components/PageWithBackButton'
+import { BudgetEntryForm } from '@/features/shared/components/forms/BudgetEntryForm'
+import { LoanEntryForm } from '@/features/shared/components/forms/LoanEntryForm'
 import { ENTRY_TYPES, FormEntryType } from '@/constants/types'
 
 export default async function NewEntryPage({
