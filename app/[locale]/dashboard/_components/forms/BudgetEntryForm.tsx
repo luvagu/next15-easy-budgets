@@ -17,7 +17,6 @@ import { Button } from '@/components/ui/button'
 import { getBudgetEntrySchema } from '@/features/shared/schemas/entries'
 import { toast } from 'sonner'
 import { CardBgColorsRG } from './CardBgColorsRG'
-import { normalizeEntryName } from '@/lib/utils'
 import { UpdateBudgetEntry } from '@/constants/types'
 import { createBudget, updateBudget } from '@/features/budgets/actions/budgets'
 import { useEffect } from 'react'
@@ -40,10 +39,7 @@ export function BudgetEntryForm({ budget }: UpdateBudgetEntry) {
 	const onSubmit = async (values: z.infer<typeof BudgetEntrySchema>) => {
 		const action =
 			budget == null ? createBudget : updateBudget.bind(null, budget.id)
-		const response = await action({
-			...values,
-			name: normalizeEntryName(values.name),
-		})
+		const response = await action(values)
 
 		if (budget && !response?.error) {
 			toast.success(response?.message)

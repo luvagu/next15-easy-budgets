@@ -19,7 +19,6 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { CardBgColorsRG } from './CardBgColorsRG'
-import { normalizeEntryName } from '@/lib/utils'
 import { UpdateLoanEntry } from '@/constants/types'
 import { createLoan, updateLoan } from '@/features/loans/actions/loans'
 import { useEffect } from 'react'
@@ -46,10 +45,7 @@ export function LoanEntryForm({ loan }: UpdateLoanEntry) {
 
 	const onSubmit = async (values: z.infer<typeof LoanEntrySchema>) => {
 		const action = loan == null ? createLoan : updateLoan.bind(null, loan.id)
-		const response = await action({
-			...values,
-			name: normalizeEntryName(values.name),
-		})
+		const response = await action(values)
 
 		if (loan && !response?.error) {
 			toast.success(response?.message)

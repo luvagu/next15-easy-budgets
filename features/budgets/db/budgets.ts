@@ -11,11 +11,16 @@ import {
 	revalidateExpensesCache,
 } from './cache'
 import { BatchItem } from 'drizzle-orm/batch'
+import { normalizeEntryName } from '@/lib/utils'
 
 export async function createBudget(data: typeof BudgetsTable.$inferInsert) {
 	const [newBudget] = await db
 		.insert(BudgetsTable)
-		.values({ ...data, availableQuota: data.totalQuota })
+		.values({
+			...data,
+			name: normalizeEntryName(data.name),
+			availableQuota: data.totalQuota,
+		})
 		.returning({ id: BudgetsTable.id, userId: BudgetsTable.clerkUserId })
 
 	revalidateBudgetsCache(newBudget)
@@ -27,9 +32,15 @@ export async function updateBudget(
 	data: Partial<typeof BudgetsTable.$inferInsert>,
 	{ id, userId }: { id: string; userId: string },
 ) {
+	let name = data.name
+
+	if (name) {
+		name = normalizeEntryName(name)
+	}
+
 	const { rowCount } = await db
 		.update(BudgetsTable)
-		.set(data)
+		.set({ ...data, ...(name && { name }) })
 		.where(and(eq(BudgetsTable.clerkUserId, userId), eq(BudgetsTable.id, id)))
 
 	const isSuccess = rowCount > 0
@@ -127,7 +138,7 @@ export async function createExpense(
 
 	const [newExpense] = await db
 		.insert(ExpensesTable)
-		.values(data)
+		.values({ ...data, name: normalizeEntryName(data.name) })
 		.returning({ id: ExpensesTable.id, parentId: ExpensesTable.parentId })
 
 	if (newExpense != null) {
@@ -188,10 +199,16 @@ export async function updateBudgetExpenses(
 	if (expenses.length > 0) {
 		expenses.forEach(expense => {
 			if (expense.id != null) {
+				let name = expense.name
+
+				if (name) {
+					name = normalizeEntryName(name)
+				}
+
 				statements.push(
 					db
 						.update(ExpensesTable)
-						.set(expense)
+						.set({ ...expense, ...(name && { name }) })
 						.where(
 							and(
 								eq(ExpensesTable.id, expense.id),

@@ -35,7 +35,6 @@ import {
 	deleteTodo,
 	updateTodo,
 } from '@/features/todos/actions/todos'
-import { normalizeEntryName } from '@/lib/utils'
 import { Spinner } from '@/components/ui/spinner'
 import {
 	Empty,
@@ -73,9 +72,7 @@ export function TodosClient({
 	})
 
 	async function onSubmit(data: z.infer<typeof AddTodoSchema>) {
-		const { error, message } = await createTodo({
-			name: normalizeEntryName(data.name),
-		})
+		const { error, message } = await createTodo(data)
 
 		if (!error) {
 			toast.success(message)

@@ -15,7 +15,6 @@ import { Input } from '@/components/ui/input'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { normalizeEntryName } from '@/lib/utils'
 import { ENTRY_TYPES, CreateEntryItem } from '@/constants/types'
 import { getEntryItemSchema } from '@/features/shared/schemas/entries'
 import { createExpense } from '@/features/budgets/actions/budgets'
@@ -40,13 +39,7 @@ export function EntryItemForm({ parentId, entryItem }: CreateEntryItem) {
 		const isExpense = entryItem === ENTRY_TYPES.EXPENSE
 		const action = isExpense ? createExpense : createInstallment
 
-		const response = await action(
-			{
-				...values,
-				name: normalizeEntryName(values.name),
-			},
-			parentId,
-		)
+		const response = await action(values, parentId)
 
 		if (response?.error) {
 			toast.error(response.message)

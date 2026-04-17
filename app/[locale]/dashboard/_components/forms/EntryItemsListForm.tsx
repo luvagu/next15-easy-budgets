@@ -25,7 +25,6 @@ import { updateBudgetExpenses } from '@/features/budgets/actions/budgets'
 import { updateLoanInstallments } from '@/features/loans/actions/loans'
 import { Checkbox } from '@/components/ui/checkbox'
 import { MoveEntryItems } from './MoveEntryItems'
-import { normalizeEntryName } from '@/lib/utils'
 import { Item, ItemActions, ItemContent, ItemTitle } from '@/components/ui/item'
 
 export function EntryItemsListForm({
@@ -64,10 +63,7 @@ export function EntryItemsListForm({
 			: updateLoanInstallments
 
 		const data = await action(parentId, {
-			items: values.items.map(item => ({
-				...item,
-				name: normalizeEntryName(item.name),
-			})),
+			items: values.items,
 		})
 
 		if (data.error) {

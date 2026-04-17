@@ -7,11 +7,12 @@ import {
 	getUserTodosTag,
 	revalidateTodosCache,
 } from './cache'
+import { normalizeEntryName } from '@/lib/utils'
 
 export async function createTodo(data: typeof TodosTable.$inferInsert) {
 	const [newTodo] = await db
 		.insert(TodosTable)
-		.values(data)
+		.values({ ...data, name: normalizeEntryName(data.name) })
 		.returning({ id: TodosTable.id, userId: TodosTable.clerkUserId })
 
 	revalidateTodosCache({ id: newTodo.id, userId: newTodo.userId })
@@ -23,9 +24,15 @@ export async function updateTodo(
 	data: Partial<typeof TodosTable.$inferInsert>,
 	{ id, userId }: { id: string; userId: string },
 ) {
+	let name = data.name
+
+	if (name) {
+		name = normalizeEntryName(name)
+	}
+
 	const { rowCount } = await db
 		.update(TodosTable)
-		.set(data)
+		.set({ ...data, ...(name && { name }) })
 		.where(and(eq(TodosTable.clerkUserId, userId), eq(TodosTable.id, id)))
 
 	const isSuccess = rowCount > 0

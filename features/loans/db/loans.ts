@@ -11,11 +11,18 @@ import {
 } from './cache'
 import { cacheTag } from 'next/cache'
 import { BatchItem } from 'drizzle-orm/batch'
+import { INVOICE_NUM_PREFIX } from '@/features/inventory/constants/constants'
+import { normalizeEntryName } from '@/lib/utils'
 
 export async function createLoan(data: typeof LoansTable.$inferInsert) {
+	let name = data.name
+	name = name.startsWith(INVOICE_NUM_PREFIX) // means it belongs to inventory sales
+		? name
+		: normalizeEntryName(name)
+
 	const [newLoan] = await db
 		.insert(LoansTable)
-		.values({ ...data, dueAmount: data.totalDebt })
+		.values({ ...data, name, dueAmount: data.totalDebt })
 		.returning({ id: LoansTable.id, userId: LoansTable.clerkUserId })
 
 	revalidateLoansCache(newLoan)
@@ -27,9 +34,17 @@ export async function updateLoan(
 	data: Partial<typeof LoansTable.$inferInsert>,
 	{ id, userId }: { id: string; userId: string },
 ) {
+	let name = data.name
+
+	if (name) {
+		name = name.startsWith(INVOICE_NUM_PREFIX) // means it belongs to inventory sales
+			? name
+			: normalizeEntryName(name)
+	}
+
 	const { rowCount } = await db
 		.update(LoansTable)
-		.set(data)
+		.set({ ...data, ...(name && { name }) })
 		.where(and(eq(LoansTable.clerkUserId, userId), eq(LoansTable.id, id)))
 
 	const isSuccess = rowCount > 0
@@ -126,7 +141,7 @@ export async function createInstallment(
 
 	const [newInstallment] = await db
 		.insert(InstallmentsTable)
-		.values(data)
+		.values({ ...data, name: normalizeEntryName(data.name) })
 		.returning({
 			id: InstallmentsTable.id,
 			parentId: InstallmentsTable.parentId,
@@ -195,10 +210,16 @@ export async function updateLoanInstallments(
 	if (installments.length > 0) {
 		installments.forEach(installment => {
 			if (installment.id != null) {
+				let name = installment.name
+
+				if (name) {
+					name = normalizeEntryName(name)
+				}
+
 				statements.push(
 					db
 						.update(InstallmentsTable)
-						.set(installment)
+						.set({ ...installment, ...(name && { name }) })
 						.where(
 							and(
 								eq(InstallmentsTable.id, installment.id),
