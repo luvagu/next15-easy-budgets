@@ -1,7 +1,6 @@
 'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,15 +15,18 @@ import {
 	MoreHorizontalIcon,
 	PencilIcon,
 	PackagePlusIcon,
+	ShoppingCartIcon,
 	TrashIcon,
 } from 'lucide-react'
-import { foldDiacritics, formatUsd } from '@/lib/utils'
+import { cn, formatUsd } from '@/lib/utils'
 import type { InventoryItemWithCategory } from '../../types/inventory'
 
 type ColumnsConfig = {
 	onEdit: (item: InventoryItemWithCategory) => void
 	onAddStock: (item: InventoryItemWithCategory) => void
 	onDelete: (item: InventoryItemWithCategory) => void
+	onAddToCart: (item: InventoryItemWithCategory) => void
+	cartItems: string[]
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	t: (key: any, values?: any) => string
 }
@@ -32,32 +34,41 @@ type ColumnsConfig = {
 export function getColumns(
 	config: ColumnsConfig,
 ): ColumnDef<InventoryItemWithCategory>[] {
-	const { onEdit, onAddStock, onDelete, t } = config
+	const { onEdit, onAddStock, onDelete, onAddToCart, cartItems, t } = config
 
 	return [
-		// ─── Checkbox ────────────────────────────────────
+		// ─── Add to Cart (pinned first so it's always visible on mobile) ─────
 		{
-			id: 'select',
-			header: ({ table }) => (
-				<Checkbox
-					checked={
-						table.getIsAllPageRowsSelected() ||
-						(table.getIsSomePageRowsSelected() && 'indeterminate')
-					}
-					onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-					aria-label='Select all'
-				/>
-			),
-			cell: ({ row }) => (
-				<Checkbox
-					checked={row.getIsSelected()}
-					onCheckedChange={value => row.toggleSelected(!!value)}
-					aria-label='Select row'
-				/>
-			),
-			enableSorting: false,
+			id: 'cart',
 			enableHiding: false,
 			size: 40,
+			cell: ({ row }) => {
+				const item = row.original
+				const isInCart = cartItems.includes(item.id)
+				const outOfStock = item.stockQty <= 0
+				return (
+					<Button
+						variant='ghost'
+						size='icon-sm'
+						disabled={outOfStock}
+						onClick={() => onAddToCart(item)}
+						aria-label={
+							outOfStock
+								? t('label_out_of_stock')
+								: isInCart
+									? t('label_remove_from_cart')
+									: t('label_add_to_cart')
+						}
+						className={cn(
+							isInCart && !outOfStock && 'text-green-600 dark:text-green-400',
+						)}
+					>
+						<ShoppingCartIcon
+							className={cn('size-4', isInCart && !outOfStock && 'fill-current')}
+						/>
+					</Button>
+				)
+			},
 		},
 
 		// ─── Name / Category / Brand ─────────────────────
@@ -88,14 +99,6 @@ export function getColumns(
 							</div>
 						)}
 					</div>
-				)
-			},
-			filterFn: (row, _columnId, filterValue: string) => {
-				const item = row.original
-				const query = foldDiacritics(filterValue)
-				return (
-					foldDiacritics(item.name).includes(query) ||
-					(item.brand ? foldDiacritics(item.brand).includes(query) : false)
 				)
 			},
 		},
@@ -181,7 +184,7 @@ export function getColumns(
 				const margin: number = row.getValue('profitMarginPct')
 				return (
 					<Badge variant='secondary' className='tabular-nums'>
-						{margin}%
+						{parseFloat(margin.toFixed(2))}%
 					</Badge>
 				)
 			},

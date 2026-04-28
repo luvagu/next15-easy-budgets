@@ -115,11 +115,13 @@ export async function getItemsByUser(
 		offset = 0,
 		categoryId,
 		brand,
+		search,
 	}: {
 		limit?: number
 		offset?: number
 		categoryId?: string
 		brand?: string
+		search?: string
 	} = {},
 ) {
 	'use cache'
@@ -134,14 +136,28 @@ export async function getItemsByUser(
 	if (brand) {
 		conditions.push(eq(InventoryItemsTable.brand, brand))
 	}
+	if (search && search.trim().length > 0) {
+		const term = `%${search.trim()}%`
+		conditions.push(
+			sql`(${InventoryItemsTable.name} ILIKE ${term} OR COALESCE(${InventoryItemsTable.brand}, '') ILIKE ${term})`,
+		)
+	}
 
-	return await db.query.InventoryItemsTable.findMany({
-		where: and(...conditions),
-		with: { category: true },
-		orderBy: ({ createdAt }, { desc }) => desc(createdAt),
-		limit,
-		offset,
-	})
+	const [items, countResult] = await Promise.all([
+		db.query.InventoryItemsTable.findMany({
+			where: and(...conditions),
+			with: { category: true },
+			orderBy: ({ createdAt }, { desc }) => desc(createdAt),
+			limit,
+			offset,
+		}),
+		db
+			.select({ count: count() })
+			.from(InventoryItemsTable)
+			.where(and(...conditions)),
+	])
+
+	return { items, totalCount: countResult[0].count }
 }
 
 export async function getItemsCount(

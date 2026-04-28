@@ -19,7 +19,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { SearchIcon, SlidersHorizontalIcon, XIcon } from 'lucide-react'
+import { SearchIcon, ShoppingCartIcon, SlidersHorizontalIcon, XIcon } from 'lucide-react'
 import type { InventoryCategory } from '../../types/inventory'
 
 interface DataTableToolbarProps<TData> {
@@ -30,6 +30,10 @@ interface DataTableToolbarProps<TData> {
 	onCategoryChange: (categoryId: string) => void
 	selectedBrand: string
 	onBrandChange: (brand: string) => void
+	search: string
+	onSearchChange: (value: string) => void
+	cartCount: number
+	onOpenCart: () => void
 }
 
 export function DataTableToolbar<TData>({
@@ -40,6 +44,10 @@ export function DataTableToolbar<TData>({
 	onCategoryChange,
 	selectedBrand,
 	onBrandChange,
+	search,
+	onSearchChange,
+	cartCount,
+	onOpenCart,
 }: DataTableToolbarProps<TData>) {
 	const t = useTranslations('inventory')
 
@@ -53,9 +61,7 @@ export function DataTableToolbar<TData>({
 	}
 
 	const isFiltered =
-		table.getState().columnFilters.length > 0 ||
-		selectedCategory !== 'all' ||
-		selectedBrand !== 'all'
+		search !== '' || selectedCategory !== 'all' || selectedBrand !== 'all'
 
 	return (
 		<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap'>
@@ -64,10 +70,8 @@ export function DataTableToolbar<TData>({
 				<SearchIcon className='absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground' />
 				<Input
 					placeholder={t('label_search_placeholder')}
-					value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-					onChange={e =>
-						table.getColumn('name')?.setFilterValue(e.target.value)
-					}
+					value={search}
+					onChange={e => onSearchChange(e.target.value)}
 					className='pl-8 h-8'
 				/>
 			</div>
@@ -105,6 +109,16 @@ export function DataTableToolbar<TData>({
 					</Select>
 				)}
 
+				{/* Cart button */}
+				<Button
+					variant={cartCount > 0 ? 'default' : 'outline'}
+					size='sm'
+					onClick={onOpenCart}
+				>
+					<ShoppingCartIcon className='size-3.5' />
+					{t('label_cart_button', { count: String(cartCount) })}
+				</Button>
+
 				{/* Column visibility toggle */}
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
@@ -137,7 +151,7 @@ export function DataTableToolbar<TData>({
 						variant='ghost'
 						size='sm'
 						onClick={() => {
-							table.resetColumnFilters()
+							onSearchChange('')
 							onCategoryChange('all')
 							onBrandChange('all')
 						}}

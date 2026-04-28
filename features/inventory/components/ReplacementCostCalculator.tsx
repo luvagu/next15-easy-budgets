@@ -9,7 +9,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
+import { NumericInput } from '@/components/ui/numeric-input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -128,14 +128,9 @@ export function ReplacementCostCalculator({
 					<div className={`grid gap-3 ${apiError ? 'grid-cols-2' : 'grid-cols-1'}`}>
 						<div className='space-y-1.5'>
 							<Label>{t('label_usd_amount')}</Label>
-							<Input
-								type='number'
-								min='0'
-								step='0.01'
+							<NumericInput
 								value={usdAmount}
-								onChange={e =>
-									setUsdAmount(parseFloat(e.target.value) || 0)
-								}
+								onChange={setUsdAmount}
 							/>
 						</div>
 
@@ -143,14 +138,9 @@ export function ReplacementCostCalculator({
 						{apiError && (
 							<div className='space-y-1.5'>
 								<Label>{t('rcalc_manual_brecha_pct')}</Label>
-								<Input
-									type='number'
-									min='0'
-									step='1'
+								<NumericInput
 									value={manualBrechaPct}
-									onChange={e =>
-										setManualBrechaPct(parseFloat(e.target.value) || 0)
-									}
+									onChange={setManualBrechaPct}
 								/>
 							</div>
 						)}

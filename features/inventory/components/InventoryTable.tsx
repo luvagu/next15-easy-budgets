@@ -1,18 +1,16 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import {
 	useReactTable,
 	getCoreRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	getFilteredRowModel,
 	flexRender,
 	type SortingState,
-	type ColumnFiltersState,
 	type VisibilityState,
-	type RowSelectionState,
+	type PaginationState,
 } from '@tanstack/react-table'
 import {
 	Table,
@@ -25,7 +23,6 @@ import {
 import { Button } from '@/components/ui/button'
 import {
 	PlusIcon,
-	ShoppingCartIcon,
 	UploadIcon,
 	CalculatorIcon,
 	HistoryIcon,
@@ -44,7 +41,7 @@ import { ManageTaxonomyDialog } from './ManageTaxonomyDialog'
 import { fetchInventoryData } from '../actions/data'
 import { deleteItem } from '../actions/items'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
-import { Spinner } from '@/components/ui/spinner'
+import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
 import type {
 	InventoryCategory,
@@ -64,6 +61,7 @@ export function InventoryTable({
 	const [items, setItems] = useState<InventoryItemWithCategory[]>([])
 	const [categories, setCategories] = useState<InventoryCategory[]>([])
 	const [brands, setBrands] = useState<string[]>([])
+	const [totalCount, setTotalCount] = useState(0)
 	const [isLoading, startTransition] = useTransition()
 
 	// Dialog state
@@ -81,35 +79,79 @@ export function InventoryTable({
 	const [historyOpen, setHistoryOpen] = useState(false)
 	const [taxonomyOpen, setTaxonomyOpen] = useState(false)
 
-	// Filters
+	// Server-side filter state
 	const [selectedCategory, setSelectedCategory] = useState('all')
 	const [selectedBrand, setSelectedBrand] = useState('all')
+	const [searchInput, setSearchInput] = useState('')
+	const [debouncedSearch, setDebouncedSearch] = useState('')
 
 	// Table state
 	const [sorting, setSorting] = useState<SortingState>([])
-	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10,
+	})
 	const [columnVisibility, setColumnVisibility] =
 		useLocalStorage<VisibilityState>('inventoryColumnVisibility', {})
-	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
+	// Cart state — persisted to localStorage so items survive page refresh
+	const [cartItems, setCartItems, clearCart] = useLocalStorage<string[]>(
+		'inventory-cart',
+		[],
+	)
+
+	// Debounce search: after 300 ms of no typing, update debouncedSearch and reset to page 0
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedSearch(searchInput)
+			setPagination(prev => ({ ...prev, pageIndex: 0 }))
+		}, 300)
+		return () => clearTimeout(timer)
+	}, [searchInput])
+
+	// Main fetch — runs on every pagination / filter change
 	const fetchData = () => {
 		startTransition(async () => {
 			const result = await fetchInventoryData({
 				categoryId: selectedCategory !== 'all' ? selectedCategory : undefined,
 				brand: selectedBrand !== 'all' ? selectedBrand : undefined,
+				search: debouncedSearch || undefined,
+				limit: pagination.pageSize,
+				offset: pagination.pageIndex * pagination.pageSize,
 			})
 			if (result) {
 				setItems(result.items as InventoryItemWithCategory[])
 				setCategories(result.categories)
 				setBrands(result.brands)
+				setTotalCount(result.totalCount)
 			}
 		})
 	}
 
+	// Keep a ref to the current fetchData so success handlers always call the latest version
+	const fetchDataRef = useRef(fetchData)
+	fetchDataRef.current = fetchData
+
 	useEffect(() => {
-		fetchData()
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [selectedCategory, selectedBrand])
+		fetchDataRef.current()
+	}, [
+		pagination.pageIndex,
+		pagination.pageSize,
+		debouncedSearch,
+		selectedCategory,
+		selectedBrand,
+	])
+
+	// Reset page when category/brand filters change
+	const handleCategoryChange = (value: string) => {
+		setSelectedCategory(value)
+		setPagination(prev => ({ ...prev, pageIndex: 0 }))
+	}
+
+	const handleBrandChange = (value: string) => {
+		setSelectedBrand(value)
+		setPagination(prev => ({ ...prev, pageIndex: 0 }))
+	}
 
 	// Action handlers
 	const handleEdit = (item: InventoryItemWithCategory) => {
@@ -123,31 +165,23 @@ export function InventoryTable({
 	}
 
 	const handleFormSuccess = () => {
-		fetchData()
+		fetchDataRef.current()
 		onStatsRefresh()
-	}
-
-	const handleRegisterSale = () => {
-		const selectedRows = table.getSelectedRowModel().rows.map(r => r.original)
-		if (selectedRows.length === 0) {
-			toast.warning(t('toast_select_items'))
-			return
-		}
-		setSaleDialogOpen(true)
 	}
 
 	const handleSaleSuccess = () => {
-		fetchData()
+		fetchDataRef.current()
 		onStatsRefresh()
-		setRowSelection({})
+		clearCart()
 	}
 
 	const handleSaleItemRemoved = (itemId: string) => {
-		setRowSelection(prev => {
-			const next = { ...prev }
-			delete next[itemId]
-			return next
-		})
+		setCartItems(prev => prev.filter(id => id !== itemId))
+	}
+
+	const handleClearCart = () => {
+		clearCart()
+		setSaleDialogOpen(false)
 	}
 
 	const handleDelete = async (item: InventoryItemWithCategory) => {
@@ -156,10 +190,40 @@ export function InventoryTable({
 			toast.error(result.message)
 		} else {
 			toast.success(t('toast_item_deleted'))
-			fetchData()
+			fetchDataRef.current()
 			onStatsRefresh()
 		}
 	}
+
+	// Cart handlers
+	const handleAddToCart = (item: InventoryItemWithCategory) => {
+		const isAlreadyInCart = cartItems.includes(item.id)
+		setCartItems(
+			prev =>
+				isAlreadyInCart
+					? prev.filter(id => id !== item.id) // remove item
+					: [...prev, item.id], // add item
+		)
+		if (isAlreadyInCart) {
+			toast.warning(t('toast_item_removed_from_cart', { item: item.name }))
+		} else {
+			toast.success(t('toast_item_added_to_cart', { item: item.name }))
+		}
+	}
+
+	const handleOpenCart = () => {
+		if (cartItems.length === 0) {
+			toast.warning(t('toast_select_items'))
+			return
+		}
+		setSaleDialogOpen(true)
+	}
+
+	// Derive cart item objects from current page items + stable cart IDs
+	const cartItemObjects = useMemo(
+		() => items.filter(i => cartItems.includes(i.id)),
+		[items, cartItems],
+	)
 
 	const columns = useMemo(
 		() =>
@@ -167,41 +231,42 @@ export function InventoryTable({
 				onEdit: handleEdit,
 				onAddStock: handleAddStock,
 				onDelete: handleDelete,
+				onAddToCart: handleAddToCart,
+				cartItems,
 				t,
 			}),
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[],
+		[cartItems],
 	)
 
 	const table = useReactTable({
 		data: items,
 		columns,
-		// Use the item's stable UUID so selection survives filter/sort changes
 		getRowId: row => row.id,
 		state: {
 			sorting,
-			columnFilters,
-			columnVisibility: columnVisibility,
-			rowSelection,
+			columnVisibility,
+			pagination,
 		},
 		onSortingChange: setSorting,
-		onColumnFiltersChange: setColumnFilters,
+		onPaginationChange: setPagination,
 		onColumnVisibilityChange: v => {
 			const newVal = typeof v === 'function' ? v(columnVisibility) : v
 			setColumnVisibility(newVal)
 		},
-		onRowSelectionChange: setRowSelection,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
-		initialState: {
-			pagination: { pageSize: 10 },
-		},
+		manualPagination: true,
+		manualFiltering: true,
+		pageCount: Math.ceil(totalCount / pagination.pageSize),
 	})
 
-	const selectedRows = table.getSelectedRowModel().rows.map(r => r.original)
-	const saleTotal = selectedRows.reduce((sum, r) => sum + r.baseSalePriceUsd, 0)
+	// Default USD amount for calculator — sum of cart items' sale prices
+	const cartTotal = cartItemObjects.reduce(
+		(sum, r) => sum + r.baseSalePriceUsd,
+		0,
+	)
 
 	return (
 		<div className='space-y-4 sm:space-y-6'>
@@ -216,11 +281,6 @@ export function InventoryTable({
 				>
 					<PlusIcon className='size-3.5' />
 					{t('label_add_item')}
-				</Button>
-				<Button size='sm' variant='outline' onClick={handleRegisterSale}>
-					<ShoppingCartIcon className='size-3.5' />
-					{t('label_register_sale')}
-					{selectedRows.length > 0 && ` (${selectedRows.length})`}
 				</Button>
 				<Button
 					size='sm'
@@ -262,9 +322,13 @@ export function InventoryTable({
 				categories={categories}
 				brands={brands}
 				selectedCategory={selectedCategory}
-				onCategoryChange={setSelectedCategory}
+				onCategoryChange={handleCategoryChange}
 				selectedBrand={selectedBrand}
-				onBrandChange={setSelectedBrand}
+				onBrandChange={handleBrandChange}
+				search={searchInput}
+				onSearchChange={setSearchInput}
+				cartCount={cartItems.length}
+				onOpenCart={handleOpenCart}
 			/>
 
 			<div className='rounded-md border bg-card -mt-2 sm:-mt-3'>
@@ -292,15 +356,17 @@ export function InventoryTable({
 						))}
 					</TableHeader>
 					<TableBody>
-						{isLoading && items.length === 0 ? (
-							<TableRow>
-								<TableCell
-									colSpan={columns.length}
-									className='h-32 text-center'
-								>
-									<Spinner className='mx-auto size-5' />
-								</TableCell>
-							</TableRow>
+						{isLoading ? (
+							// Skeleton rows — one placeholder row per page slot
+							Array.from({ length: pagination.pageSize }).map((_, i) => (
+								<TableRow key={i}>
+									{table.getVisibleLeafColumns().map(col => (
+										<TableCell key={col.id}>
+											<Skeleton className='h-6 w-full' />
+										</TableCell>
+									))}
+								</TableRow>
+							))
 						) : table.getRowModel().rows.length === 0 ? (
 							<TableRow>
 								<TableCell
@@ -312,10 +378,7 @@ export function InventoryTable({
 							</TableRow>
 						) : (
 							table.getRowModel().rows.map(row => (
-								<TableRow
-									key={row.id}
-									data-state={row.getIsSelected() ? 'selected' : undefined}
-								>
+								<TableRow key={row.id}>
 									{row.getVisibleCells().map(cell => (
 										<TableCell key={cell.id}>
 											{flexRender(
@@ -331,7 +394,7 @@ export function InventoryTable({
 				</Table>
 			</div>
 
-			<DataTablePagination table={table} />
+			<DataTablePagination table={table} totalCount={totalCount} />
 
 			{/* Dialogs */}
 			<ItemFormDialog
@@ -353,9 +416,10 @@ export function InventoryTable({
 			<RegisterSaleDialog
 				open={saleDialogOpen}
 				onOpenChange={setSaleDialogOpen}
-				selectedItems={selectedRows}
+				selectedItems={cartItemObjects}
 				onSuccess={handleSaleSuccess}
 				onItemRemoved={handleSaleItemRemoved}
+				onClearCart={handleClearCart}
 			/>
 
 			<BulkUploadDialog
@@ -368,7 +432,7 @@ export function InventoryTable({
 				open={calcOpen}
 				onOpenChange={setCalcOpen}
 				exchangeRates={exchangeRates}
-				defaultUsdAmount={saleTotal}
+				defaultUsdAmount={cartTotal}
 			/>
 
 			<SalesHistoryDialog

@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/popover'
 import { Switch } from '@/components/ui/switch'
 import { CalendarIcon, MinusIcon, PlusIcon, TrashIcon } from 'lucide-react'
+import { NumericInput } from '@/components/ui/numeric-input'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { getSaleInvoiceSchema } from '../schemas/inventory'
@@ -48,6 +49,7 @@ interface RegisterSaleDialogProps {
 	selectedItems: InventoryItemWithCategory[]
 	onSuccess: () => void
 	onItemRemoved?: (itemId: string) => void
+	onClearCart?: () => void
 }
 
 function formatUsd(value: number) {
@@ -64,6 +66,7 @@ export function RegisterSaleDialog({
 	selectedItems,
 	onSuccess,
 	onItemRemoved,
+	onClearCart,
 }: RegisterSaleDialogProps) {
 	const t = useTranslations('inventory')
 	const tForms = useTranslations('forms')
@@ -317,17 +320,17 @@ export function RegisterSaleDialog({
 													>
 														<MinusIcon className='size-3' />
 													</Button>
-													<Input
-														type='number'
-														min='1'
-														max={item.stockQty}
-														className='w-12 text-center h-8 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+													<NumericInput
+														integer
 														value={qty}
-														onChange={e => {
-															const v = parseInt(e.target.value) || 1
+														className='w-12 text-center h-8 text-sm'
+														onChange={v => {
 															update(index, {
 																...fields[index],
-																qty: Math.min(Math.max(1, v), item.stockQty),
+																qty: Math.min(
+																	Math.max(1, v || 1),
+																	item.stockQty,
+																),
 															})
 														}}
 													/>
@@ -363,7 +366,7 @@ export function RegisterSaleDialog({
 							<Separator />
 
 							{/* Delivery + Discount — equal columns */}
-							<div className='grid grid-cols-2 gap-3'>
+							<div className='grid grid-cols-2 gap-3 items-baseline'>
 								<FormField
 									control={form.control}
 									name='deliveryChargeUsd'
@@ -371,15 +374,10 @@ export function RegisterSaleDialog({
 										<FormItem>
 											<FormLabel>{t('label_delivery_usd')}</FormLabel>
 											<FormControl>
-												<Input
-													type='number'
-													step='0.01'
-													min='0'
-													className='[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-													{...field}
-													onChange={e =>
-														field.onChange(parseFloat(e.target.value) || 0)
-													}
+												<NumericInput
+													value={field.value}
+													onChange={field.onChange}
+													onBlur={field.onBlur}
 												/>
 											</FormControl>
 											<FormMessage />
@@ -425,18 +423,11 @@ export function RegisterSaleDialog({
 													</button>
 												</div>
 												<FormControl>
-													<Input
-														type='number'
-														step={watchDiscountType === 'pct' ? '1' : '0.01'}
-														min='0'
-														max={
-															watchDiscountType === 'pct' ? '100' : undefined
-														}
-														className='[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-														{...field}
-														onChange={e =>
-															field.onChange(parseFloat(e.target.value) || 0)
-														}
+													<NumericInput
+														integer={watchDiscountType === 'pct'}
+														value={field.value}
+														onChange={field.onChange}
+														onBlur={field.onBlur}
 													/>
 												</FormControl>
 											</div>
@@ -558,23 +549,34 @@ export function RegisterSaleDialog({
 
 						{/* Sticky footer */}
 						<div className='px-4 py-3 border-t shrink-0'>
-							<div className='flex gap-2 justify-end'>
+							<div className='flex gap-2 justify-between'>
 								<Button
 									type='button'
-									variant='outline'
-									className='flex-1 sm:flex-none'
-									onClick={() => onOpenChange(false)}
+									variant='ghost'
+									size='sm'
+									className='text-destructive hover:text-destructive'
+									onClick={onClearCart}
 								>
-									{t('label_cancel')}
+									{t('label_clear_cart')}
 								</Button>
-								<Button
-									type='submit'
-									className='flex-1 sm:flex-none'
-									disabled={isPending || fields.length === 0}
-								>
-									{isPending && <Spinner className='size-4' />}
-									{t('label_complete_sale')}
-								</Button>
+								<div className='flex gap-2'>
+									<Button
+										type='button'
+										variant='outline'
+										className='flex-1 sm:flex-none'
+										onClick={() => onOpenChange(false)}
+									>
+										{t('label_cancel')}
+									</Button>
+									<Button
+										type='submit'
+										className='flex-1 sm:flex-none'
+										disabled={isPending || fields.length === 0}
+									>
+										{isPending && <Spinner className='size-4' />}
+										{t('label_complete_sale')}
+									</Button>
+								</div>
 							</div>
 						</div>
 					</form>

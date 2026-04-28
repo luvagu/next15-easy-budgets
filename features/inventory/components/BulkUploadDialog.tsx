@@ -50,6 +50,8 @@ type ParsedRow = {
 	cost: number
 	stock: number
 	margin: number
+	// NOTE: 'salePrice' maps to the TSV header 'salePrice' — never translate this key.
+	salePrice?: number
 }
 
 type ValidationResult = {
@@ -97,6 +99,11 @@ export function BulkUploadDialog({
 	const [resolutions, setResolutions] = useState<
 		Record<number, BulkUploadRowResolution>
 	>({})
+	// Conflict resolution when TSV contains both 'margin' and 'salePrice' columns
+	const [hasBothPriceColumns, setHasBothPriceColumns] = useState(false)
+	const [priceConflictResolution, setPriceConflictResolution] = useState<
+		'margin' | 'salePrice'
+	>('margin')
 	const [isValidating, startValidating] = useTransition()
 	const [isProcessing, startProcessing] = useTransition()
 
@@ -106,6 +113,8 @@ export function BulkUploadDialog({
 		setParsedRows([])
 		setValidationResults([])
 		setResolutions({})
+		setHasBothPriceColumns(false)
+		setPriceConflictResolution('margin')
 	}
 
 	const handleParse = () => {
@@ -113,7 +122,7 @@ export function BulkUploadDialog({
 		// chokes on Latin/special characters (ñ, á, etc.) in field values.
 		// TSV fields are never quoted, so splitting on \t is always safe.
 		const normalized = rawText
-			.replace(/^\uFEFF/, '') // strip BOM
+			.replace(/^﻿/, '') // strip BOM
 			.replace(/\r\n/g, '\n') // CRLF → LF
 			.replace(/\r/g, '\n') // bare CR → LF
 
@@ -124,6 +133,7 @@ export function BulkUploadDialog({
 			return
 		}
 
+		// Headers are lowercased for key lookup; 'salePrice' → 'saleprice'
 		const headers = lines[0].split('\t').map(h => h.trim().toLowerCase())
 		const dataLines = lines.slice(1)
 
@@ -139,6 +149,11 @@ export function BulkUploadDialog({
 			return
 		}
 
+		// Detect if both 'margin' and 'salePrice' (lowercased: 'saleprice') columns exist
+		const hasMarginCol = headers.includes('margin')
+		const hasSalePriceCol = headers.includes('saleprice')
+		setHasBothPriceColumns(hasMarginCol && hasSalePriceCol)
+
 		const rows: ParsedRow[] = rawRows.map(row => ({
 			name: row.name?.trim() ?? '',
 			brand: row.brand?.trim() || undefined,
@@ -146,7 +161,12 @@ export function BulkUploadDialog({
 			unit: row.unit?.trim() ?? '',
 			cost: parseFloat(row.cost) || 0,
 			stock: parseInt(row.stock) || 0,
-			margin: parseFloat(row.margin) || 30,
+			margin: row.margin !== undefined ? parseFloat(row.margin) || 30 : 30,
+			// Map lowercased TSV key 'saleprice' → ParsedRow.salePrice
+			salePrice:
+				row.saleprice !== undefined && row.saleprice !== ''
+					? parseFloat(row.saleprice) || undefined
+					: undefined,
 		}))
 
 		setParsedRows(rows)
@@ -187,6 +207,9 @@ export function BulkUploadDialog({
 			const result = await processBulkUpload({
 				rows: parsedRows,
 				resolutions,
+				priceConflictResolution: hasBothPriceColumns
+					? priceConflictResolution
+					: undefined,
 			})
 			if (result.error) {
 				toast.error(result.message)
@@ -338,28 +361,56 @@ export function BulkUploadDialog({
 				{step === 'review' && (
 					<>
 						<div className='flex-1 overflow-y-auto min-h-0 px-6 space-y-3 pb-2'>
-							<div className='rounded-md border overflow-x-auto'>
+							{/* Price conflict resolution — shown only when both columns detected */}
+							{hasBothPriceColumns && (
+								<div className='rounded-md border bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800 p-3 flex flex-col sm:flex-row gap-3 sm:items-center'>
+									<AlertTriangleIcon className='size-4 text-amber-500 shrink-0 hidden sm:block' />
+									<p className='text-xs text-amber-700 dark:text-amber-400 flex-1'>
+										{t('label_price_conflict_desc')}
+									</p>
+									<Select
+										value={priceConflictResolution}
+										onValueChange={v =>
+											setPriceConflictResolution(v as 'margin' | 'salePrice')
+										}
+									>
+										<SelectTrigger className='h-8 w-full sm:w-44 text-xs shrink-0'>
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value='margin'>
+												{t('label_prioritize_margin')}
+											</SelectItem>
+											<SelectItem value='salePrice'>
+												{t('label_prioritize_sale_price')}
+											</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							)}
+
+							<div className='w-full overflow-x-auto rounded-md border'>
 								<Table>
 									<TableHeader>
 										<TableRow>
 											<TableHead className='w-8'>#</TableHead>
-											<TableHead className='min-w-[130px]'>
+											<TableHead className='min-w-32.5'>
 												{t('col_status')}
 											</TableHead>
-											<TableHead className='min-w-[140px]'>
+											<TableHead className='min-w-35'>
 												{t('label_name')}
 											</TableHead>
-											<TableHead className='min-w-[80px]'>
+											<TableHead className='min-w-20'>
 												{t('label_brand')}
 											</TableHead>
-											<TableHead className='min-w-[90px]'>
+											<TableHead className='min-w-22.5'>
 												{t('label_category')}
 											</TableHead>
-											<TableHead className='min-w-[70px]'>
+											<TableHead className='min-w-17.5'>
 												{t('label_cost_usd')}
 											</TableHead>
 											<TableHead className='w-14'>{t('col_stock')}</TableHead>
-											<TableHead className='min-w-[100px]'>
+											<TableHead className='min-w-25'>
 												{t('col_action')}
 											</TableHead>
 										</TableRow>

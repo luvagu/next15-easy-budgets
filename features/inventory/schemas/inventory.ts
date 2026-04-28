@@ -22,6 +22,9 @@ export const getInventoryItemSchema = ({
 			unit: z.string().min(1, message),
 			baseCostUsd: z.number().positive(message),
 			profitMarginPct: z.number().min(0).max(1000),
+			// User-specified sale price — when present it is stored directly so that
+			// the exact value the user typed is preserved without floating-point drift.
+			baseSalePriceUsd: z.number().positive().optional(),
 			categoryName: z.string().min(1, message),
 			initialStock: z.number().int().nonnegative(),
 			comboQtyThreshold: z.number().int().positive().optional(),
@@ -51,7 +54,8 @@ export const getInventoryItemSchema = ({
 		.refine(
 			data => {
 				if (data.comboPriceUsd == null) return true
-				const regularPrice = data.baseCostUsd * (1 + data.profitMarginPct / 100)
+				const regularPrice =
+					data.baseSalePriceUsd ?? data.baseCostUsd * (1 + data.profitMarginPct / 100)
 				return data.comboPriceUsd < regularPrice
 			},
 			{
@@ -118,6 +122,8 @@ export const getBulkUploadRowSchema = (message = 'Required') =>
 		cost: z.number().positive(message),
 		stock: z.number().int().nonnegative().default(0),
 		margin: z.number().min(0).max(1000).default(30),
+		// NOTE: 'salePrice' is an exact parser key — never translate this in i18n dicts.
+		salePrice: z.number().positive().optional(),
 	})
 
 export const getBulkUploadSchema = (message = 'Required') =>

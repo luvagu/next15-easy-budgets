@@ -145,23 +145,26 @@ export function SalesHistoryDialog({
 										<StatusBadge status={inv.status} t={t} />
 									</div>
 
-									{/* Row 2: items preview · total · return button */}
-									<div className='flex items-center justify-between gap-2'>
-										<p className='text-xs text-muted-foreground truncate'>
-											{t('col_items_count', {
-												count: String(inv.lineItems.length),
-											})}
-											{inv.lineItems.length > 0 && (
-												<>
-													{' — '}
-													{inv.lineItems
-														.slice(0, 3)
-														.map(li => li.item?.name ?? '—')
-														.join(', ')}
-													{inv.lineItems.length > 3 && '…'}
-												</>
-											)}
-										</p>
+									{/* Row 2: compact line-item list · total · return button */}
+									<div className='flex items-start justify-between gap-2'>
+										<ul className='flex-1 min-w-0 space-y-0.5'>
+											{inv.lineItems.map(li => (
+												<li
+													key={li.id}
+													className='flex items-center gap-1.5 text-xs text-muted-foreground'
+												>
+													<span className='tabular-nums font-medium text-foreground/70 shrink-0'>
+														{li.qty}×
+													</span>
+													<span className='truncate'>{li.item?.name ?? '—'}</span>
+													{li.refundedQty > 0 && (
+														<span className='shrink-0 text-amber-600'>
+															(−{li.refundedQty})
+														</span>
+													)}
+												</li>
+											))}
+										</ul>
 										<div className='flex items-center gap-2 shrink-0'>
 											<span className='text-sm font-semibold tabular-nums'>
 												{formatUsd(inv.totalAmountUsd)}

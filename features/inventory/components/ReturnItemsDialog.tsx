@@ -10,7 +10,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { NumericInput } from '@/components/ui/numeric-input'
 import { Separator } from '@/components/ui/separator'
 import { Spinner } from '@/components/ui/spinner'
 import { Badge } from '@/components/ui/badge'
@@ -176,19 +176,11 @@ export function ReturnItemsDialog({
 												>
 													<span className='text-sm leading-none'>−</span>
 												</Button>
-												<Input
-													type='number'
-													min='0'
-													max={returnable}
+												<NumericInput
+													integer
 													value={qty}
-													className='w-12 text-center h-7 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-													onChange={e =>
-														setQty(
-															li.id,
-															parseInt(e.target.value) || 0,
-															returnable,
-														)
-													}
+													className='w-12 text-center h-7 text-sm'
+													onChange={v => setQty(li.id, v, returnable)}
 												/>
 												<Button
 													type='button'

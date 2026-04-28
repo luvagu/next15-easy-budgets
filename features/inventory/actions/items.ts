@@ -50,8 +50,10 @@ export async function addOrUpdateItem(
 	try {
 		const category = await findOrCreateCategory(userId, data.categoryName)
 
+		// Prefer the user-typed sale price to preserve exact decimal entry;
+		// fall back to cost × (1 + margin/100) when not explicitly provided.
 		const baseSalePriceUsd =
-			data.baseCostUsd * (1 + data.profitMarginPct / 100)
+			data.baseSalePriceUsd ?? data.baseCostUsd * (1 + data.profitMarginPct / 100)
 
 		const itemData = {
 			clerkUserId: userId,
@@ -268,6 +270,7 @@ export async function validateBulkUpload(rows: BulkUploadRow[]) {
 export async function processBulkUpload(input: {
 	rows: BulkUploadRow[]
 	resolutions: Record<number, BulkUploadRowResolution>
+	priceConflictResolution?: 'margin' | 'salePrice'
 }) {
 	const { userId } = await auth()
 	const t = await getTranslations('server_messages')
@@ -382,6 +385,15 @@ export async function processBulkUpload(input: {
 				const catKey = data.category.trim().toLowerCase()
 				const categoryId = categoryCache.get(catKey)!
 
+				// Use salePrice to derive margin unless user explicitly chose "margin" priority
+				const useSalePrice =
+					data.salePrice !== undefined &&
+					input.priceConflictResolution !== 'margin'
+				const finalMargin = useSalePrice && data.cost > 0
+					? ((data.salePrice! - data.cost) / data.cost) * 100
+					: data.margin
+				const finalSalePrice = data.cost * (1 + finalMargin / 100)
+
 				queries.push(
 					db.insert(InventoryItemsTable).values({
 						clerkUserId: userId,
@@ -390,8 +402,8 @@ export async function processBulkUpload(input: {
 						brand: data.brand ?? null,
 						unit: data.unit,
 						baseCostUsd: data.cost,
-						profitMarginPct: data.margin,
-						baseSalePriceUsd: data.cost * (1 + data.margin / 100),
+						profitMarginPct: parseFloat(finalMargin.toFixed(4)),
+						baseSalePriceUsd: finalSalePrice,
 						stockQty: data.stock,
 					})
 				)

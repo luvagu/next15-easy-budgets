@@ -1,28 +1,29 @@
 'use server'
 
 import { auth } from '@clerk/nextjs/server'
-import {
-	getItemsByUser,
-	getItemsCount,
-	getDistinctBrands,
-} from '../db/items'
+import { getItemsByUser, getDistinctBrands } from '../db/items'
 import { getCategoriesByUser } from '../db/categories'
 
 export async function fetchInventoryData(filters?: {
 	categoryId?: string
 	brand?: string
+	search?: string
+	limit?: number
+	offset?: number
 }) {
 	const { userId } = await auth()
 	if (userId == null) return null
 
-	const [items, categories, brands, totalCount] = await Promise.all([
+	const [{ items, totalCount }, categories, brands] = await Promise.all([
 		getItemsByUser(userId, {
 			categoryId: filters?.categoryId,
 			brand: filters?.brand,
+			search: filters?.search,
+			limit: filters?.limit,
+			offset: filters?.offset,
 		}),
 		getCategoriesByUser(userId),
 		getDistinctBrands(userId),
-		getItemsCount(userId),
 	])
 
 	return { items, categories, brands, totalCount }

@@ -22,6 +22,7 @@ import {
 	FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { NumericInput } from '@/components/ui/numeric-input'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { toast } from 'sonner'
@@ -133,14 +134,11 @@ export function AddStockDialog({
 								<FormItem>
 									<FormLabel>{t('label_qty_to_add')}</FormLabel>
 									<FormControl>
-										<Input
-											type='number'
-											step='1'
-											min='1'
-											{...field}
-											onChange={e =>
-												field.onChange(parseInt(e.target.value) || 1)
-											}
+										<NumericInput
+											integer
+											value={field.value}
+											onChange={field.onChange}
+											onBlur={field.onBlur}
 										/>
 									</FormControl>
 									<FormMessage />
@@ -156,14 +154,10 @@ export function AddStockDialog({
 								<FormItem>
 									<FormLabel>{t('label_cost_per_unit')}</FormLabel>
 									<FormControl>
-										<Input
-											type='number'
-											step='0.01'
-											min='0'
-											{...field}
-											onChange={e =>
-												field.onChange(parseFloat(e.target.value) || 0)
-											}
+										<NumericInput
+											value={field.value}
+											onChange={field.onChange}
+											onBlur={field.onBlur}
 										/>
 									</FormControl>
 									<FormMessage />

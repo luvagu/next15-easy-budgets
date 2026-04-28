@@ -22,6 +22,7 @@ import {
 	FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { NumericInput } from '@/components/ui/numeric-input'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Spinner } from '@/components/ui/spinner'
@@ -72,6 +73,7 @@ export function ItemFormDialog({
 			unit: '',
 			baseCostUsd: 0,
 			profitMarginPct: 30,
+			baseSalePriceUsd: 0,
 			categoryName: '',
 			initialStock: 0,
 			comboQtyThreshold: undefined,
@@ -79,7 +81,7 @@ export function ItemFormDialog({
 		},
 	})
 
-	// Resets combo UI state and closes the dialog (handles ESC, outside-click, cancel, submit)
+	// Resets combo UI state and closes the dialog
 	const handleOpenChange = (v: boolean) => {
 		if (!v) {
 			setComboPriceMode('usd')
@@ -99,6 +101,7 @@ export function ItemFormDialog({
 							unit: editItem.unit,
 							baseCostUsd: editItem.baseCostUsd,
 							profitMarginPct: editItem.profitMarginPct,
+							baseSalePriceUsd: editItem.baseSalePriceUsd,
 							categoryName: editItem.category.name,
 							initialStock: 0,
 							comboQtyThreshold: editItem.comboQtyThreshold ?? undefined,
@@ -110,6 +113,7 @@ export function ItemFormDialog({
 							unit: '',
 							baseCostUsd: 0,
 							profitMarginPct: 30,
+							baseSalePriceUsd: 0,
 							categoryName: '',
 							initialStock: 0,
 							comboQtyThreshold: undefined,
@@ -119,17 +123,11 @@ export function ItemFormDialog({
 		}
 	}, [open, editItem, form])
 
-	const watchCost =
-		useWatch({ control: form.control, name: 'baseCostUsd' }) ?? 0
-	const watchMargin =
-		useWatch({ control: form.control, name: 'profitMarginPct' }) ?? 0
-	const watchComboQty =
-		useWatch({ control: form.control, name: 'comboQtyThreshold' })
-	const watchComboPrice =
-		useWatch({ control: form.control, name: 'comboPriceUsd' })
-
-	const previewSalePrice =
-		watchCost > 0 && watchMargin >= 0 ? watchCost * (1 + watchMargin / 100) : 0
+	// useWatch for combo preview only — no effects derive from these
+	const watchCost = useWatch({ control: form.control, name: 'baseCostUsd' }) ?? 0
+	const watchMargin = useWatch({ control: form.control, name: 'profitMarginPct' }) ?? 0
+	const watchComboQty = useWatch({ control: form.control, name: 'comboQtyThreshold' })
+	const watchComboPrice = useWatch({ control: form.control, name: 'comboPriceUsd' })
 
 	const comboTotalPreview =
 		watchComboQty != null && watchComboQty > 0 &&
@@ -170,185 +168,184 @@ export function ItemFormDialog({
 						onSubmit={form.handleSubmit(onSubmit)}
 						className='flex flex-col flex-1 min-h-0'
 					>
-						{/* Scrollable body */}
 						<div className='flex-1 overflow-y-auto min-h-0 px-6 space-y-4 pb-2'>
-						{/* Name */}
-						<FormField
-							control={form.control}
-							name='name'
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t('label_name')}</FormLabel>
-									<FormControl>
-										<Input
-											placeholder={t('label_name_placeholder')}
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						{/* Category & Brand row */}
-						<div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+							{/* Name */}
 							<FormField
 								control={form.control}
-								name='categoryName'
+								name='name'
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>{t('label_category')}</FormLabel>
-										<CreatableCombobox
-											options={categoryNames}
-											value={field.value}
-											onChange={field.onChange}
-											placeholder={t('label_category_placeholder')}
-										/>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name='brand'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t('label_brand')}</FormLabel>
-										<CreatableCombobox
-											options={brandNames}
-											value={field.value ?? ''}
-											onChange={field.onChange}
-											placeholder={t('label_brand_placeholder')}
-										/>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-
-						{/* Unit */}
-						<FormField
-							control={form.control}
-							name='unit'
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t('label_unit')}</FormLabel>
-									<FormControl>
-										<Input
-											placeholder={t('label_unit_placeholder')}
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						{/* Initial Stock — create only */}
-						{!isEdit && (
-							<FormField
-								control={form.control}
-								name='initialStock'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t('label_initial_stock')}</FormLabel>
+										<FormLabel>{t('label_name')}</FormLabel>
 										<FormControl>
 											<Input
-												type='number'
-												step='1'
-												min='0'
-												className='[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+												placeholder={t('label_name_placeholder')}
 												{...field}
-												onChange={e =>
-													field.onChange(parseInt(e.target.value) || 0)
-												}
 											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>
 								)}
 							/>
-						)}
 
-						{/* Cost & Margin row */}
-						<div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-							<FormField
-								control={form.control}
-								name='baseCostUsd'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t('label_cost_usd')}</FormLabel>
-										<FormControl>
-											<Input
-												type='number'
-												step='0.01'
-												min='0'
-												{...field}
-												onChange={e =>
-													field.onChange(parseFloat(e.target.value) || 0)
-												}
+							{/* Category & Brand row */}
+							<div className='grid grid-cols-1 sm:grid-cols-2 gap-3 items-baseline'>
+								<FormField
+									control={form.control}
+									name='categoryName'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t('label_category')}</FormLabel>
+											<CreatableCombobox
+												options={categoryNames}
+												value={field.value}
+												onChange={field.onChange}
+												placeholder={t('label_category_placeholder')}
 											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name='profitMarginPct'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t('label_margin_pct')}</FormLabel>
-										<FormControl>
-											<Input
-												type='number'
-												step='1'
-												min='0'
-												{...field}
-												onChange={e =>
-													field.onChange(parseFloat(e.target.value) || 0)
-												}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
-
-						{/* Sale Price Preview */}
-						{previewSalePrice > 0 && (
-							<p className='text-sm text-muted-foreground'>
-								{t('label_sale_price')}:{' '}
-								<span className='font-semibold text-foreground'>
-									${previewSalePrice.toFixed(2)}
-								</span>
-							</p>
-						)}
-
-						<Separator />
-
-						{/* Combo Pricing (optional) */}
-						<p className='text-xs text-muted-foreground'>
-							{t('label_combo_pricing')}
-						</p>
-						<div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-							<FormField
-								control={form.control}
-								name='comboQtyThreshold'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>{t('label_combo_min_qty')}</FormLabel>
-										<FormControl>
-											<Input
-												type='number'
-												step='1'
-												min='1'
-												placeholder='e.g. 6'
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name='brand'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t('label_brand')}</FormLabel>
+											<CreatableCombobox
+												options={brandNames}
 												value={field.value ?? ''}
-												onChange={e => {
-													const v = e.target.value
-													field.onChange(v === '' ? undefined : parseInt(v))
+												onChange={field.onChange}
+												placeholder={t('label_brand_placeholder')}
+											/>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+
+							{/* Unit & Initial Stock */}
+							<div className='grid grid-cols-1 sm:grid-cols-2 gap-3 items-baseline'>
+								<FormField
+									control={form.control}
+									name='unit'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t('label_unit')}</FormLabel>
+											<FormControl>
+												<Input
+													placeholder={t('label_unit_placeholder')}
+													{...field}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								{!isEdit && (
+									<FormField
+										control={form.control}
+										name='initialStock'
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>{t('label_initial_stock')}</FormLabel>
+												<FormControl>
+													<NumericInput
+														integer
+														value={field.value}
+														onChange={field.onChange}
+														onBlur={field.onBlur}
+														placeholder='0'
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								)}
+							</div>
+
+							{/* Cost · Margin · Sale Price — three-way reactive fields */}
+							<div className='grid grid-cols-1 sm:grid-cols-2 gap-3 items-baseline'>
+								{/* Cost */}
+								<FormField
+									control={form.control}
+									name='baseCostUsd'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t('label_cost_usd')}</FormLabel>
+											<FormControl>
+												<NumericInput
+													value={field.value}
+													onBlur={field.onBlur}
+													placeholder='0.00'
+													onChange={cost => {
+														field.onChange(cost)
+														// Recalculate sale price from the new cost + existing margin
+														const margin = form.getValues('profitMarginPct') ?? 0
+														form.setValue(
+															'baseSalePriceUsd',
+															cost > 0 ? cost * (1 + margin / 100) : 0,
+															{ shouldDirty: true },
+														)
+													}}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								{/* Margin */}
+								<FormField
+									control={form.control}
+									name='profitMarginPct'
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>{t('label_margin_pct')}</FormLabel>
+											<FormControl>
+												<NumericInput
+													value={field.value}
+													onBlur={field.onBlur}
+													onChange={margin => {
+														field.onChange(margin)
+														// Recalculate sale price from existing cost + new margin
+														const cost = form.getValues('baseCostUsd') ?? 0
+														form.setValue(
+															'baseSalePriceUsd',
+															cost > 0 ? cost * (1 + margin / 100) : 0,
+															{ shouldDirty: true },
+														)
+													}}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+
+							{/* Sale Price — reverse-calculates margin when edited */}
+							<FormField
+								control={form.control}
+								name='baseSalePriceUsd'
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t('label_sale_price')}</FormLabel>
+										<FormControl>
+											<NumericInput
+												value={field.value ?? 0}
+												onBlur={field.onBlur}
+												placeholder='0.00'
+												onChange={price => {
+													field.onChange(price)
+													// Reverse-calculate margin from the new sale price + existing cost
+													const cost = form.getValues('baseCostUsd') ?? 0
+													if (cost > 0 && price > 0) {
+														form.setValue(
+															'profitMarginPct',
+															((price - cost) / cost) * 100,
+															{ shouldDirty: true },
+														)
+													}
 												}}
 											/>
 										</FormControl>
@@ -356,112 +353,158 @@ export function ItemFormDialog({
 									</FormItem>
 								)}
 							/>
-							<FormField
-								control={form.control}
-								name='comboPriceUsd'
-								render={({ field }) => {
-									const regularPrice = watchCost * (1 + watchMargin / 100)
-									return (
+
+							<Separator />
+
+							{/* Combo Pricing (optional) */}
+							<p className='text-xs text-muted-foreground'>
+								{t('label_combo_pricing')}
+							</p>
+							<div className='grid grid-cols-1 sm:grid-cols-2 gap-3 items-baseline'>
+								<FormField
+									control={form.control}
+									name='comboQtyThreshold'
+									render={({ field }) => (
 										<FormItem>
-											<FormLabel>{t('label_combo_price')}</FormLabel>
-											<div className='flex gap-1.5'>
-												{/* % / $ mode toggle */}
-												<div className='flex rounded-md border overflow-hidden shrink-0'>
-													<button
-														type='button'
-														onClick={() => {
-															if (comboPriceMode === 'usd') {
-																// convert current USD price → equivalent % off
-																if (field.value && regularPrice > 0) {
-																	const pct = ((regularPrice - field.value) / regularPrice) * 100
-																	setComboPctInput(parseFloat(pct.toFixed(1)).toString())
-																} else {
-																	setComboPctInput('')
-																}
-																setComboPriceMode('pct')
-															}
-														}}
-														className={cn(
-															'px-2.5 py-1.5 text-xs font-medium transition-colors',
-															comboPriceMode === 'pct'
-																? 'bg-primary text-primary-foreground'
-																: 'text-muted-foreground hover:bg-muted',
-														)}
-													>
-														%
-													</button>
-													<button
-														type='button'
-														onClick={() => setComboPriceMode('usd')}
-														className={cn(
-															'px-2.5 py-1.5 text-xs font-medium transition-colors',
-															comboPriceMode === 'usd'
-																? 'bg-primary text-primary-foreground'
-																: 'text-muted-foreground hover:bg-muted',
-														)}
-													>
-														$
-													</button>
-												</div>
-												<FormControl>
-													{comboPriceMode === 'usd' ? (
-														<Input
-															type='number'
-															step='0.01'
-															min='0'
-															placeholder='e.g. 5.00'
-															className='[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-															value={field.value ?? ''}
-															onChange={e => {
-																const v = e.target.value
-																field.onChange(v === '' ? undefined : parseFloat(v))
-															}}
-														/>
-													) : (
-														<Input
-															type='number'
-															step='0.1'
-															min='0'
-															max='100'
-															placeholder='% off sale price'
-															className='[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-															value={comboPctInput}
-															onChange={e => {
-																setComboPctInput(e.target.value)
-																const pct = parseFloat(e.target.value) || 0
-																const computed = regularPrice > 0
-																	? regularPrice * (1 - pct / 100)
-																	: 0
-																field.onChange(computed > 0 ? parseFloat(computed.toFixed(4)) : undefined)
-															}}
-														/>
-													)}
-												</FormControl>
-											</div>
-											{/* show computed USD price when in pct mode */}
-											{comboPriceMode === 'pct' && field.value != null && field.value > 0 && (
-												<p className='text-xs text-muted-foreground'>
-													= ${field.value.toFixed(2)}/unit
-												</p>
-											)}
+											<FormLabel>{t('label_combo_min_qty')}</FormLabel>
+											<FormControl>
+												{/* Optional integer — inline input to support undefined */}
+												<Input
+													type='text'
+													inputMode='numeric'
+													placeholder='e.g. 6'
+													value={field.value ?? ''}
+													onChange={e => {
+														const raw = e.target.value
+														if (raw === '' || /^\d*$/.test(raw)) {
+															const v = parseInt(raw, 10)
+															field.onChange(raw === '' || isNaN(v) ? undefined : v)
+														}
+													}}
+												/>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
-									)
-								}}
-							/>
-						</div>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name='comboPriceUsd'
+									render={({ field }) => {
+										const regularPrice = watchCost * (1 + watchMargin / 100)
+										return (
+											<FormItem>
+												<FormLabel>{t('label_combo_price')}</FormLabel>
+												<div className='flex gap-1.5'>
+													{/* % / $ mode toggle */}
+													<div className='flex rounded-md border overflow-hidden shrink-0'>
+														<button
+															type='button'
+															onClick={() => {
+																if (comboPriceMode === 'usd') {
+																	if (field.value && regularPrice > 0) {
+																		const pct =
+																			((regularPrice - field.value) / regularPrice) * 100
+																		setComboPctInput(
+																			parseFloat(pct.toFixed(1)).toString(),
+																		)
+																	} else {
+																		setComboPctInput('')
+																	}
+																	setComboPriceMode('pct')
+																}
+															}}
+															className={cn(
+																'px-2.5 py-1.5 text-xs font-medium transition-colors',
+																comboPriceMode === 'pct'
+																	? 'bg-primary text-primary-foreground'
+																	: 'text-muted-foreground hover:bg-muted',
+															)}
+														>
+															%
+														</button>
+														<button
+															type='button'
+															onClick={() => setComboPriceMode('usd')}
+															className={cn(
+																'px-2.5 py-1.5 text-xs font-medium transition-colors',
+																comboPriceMode === 'usd'
+																	? 'bg-primary text-primary-foreground'
+																	: 'text-muted-foreground hover:bg-muted',
+															)}
+														>
+															$
+														</button>
+													</div>
+													<FormControl>
+														{comboPriceMode === 'usd' ? (
+															/* Optional decimal — inline to support undefined */
+															<Input
+																type='text'
+																inputMode='decimal'
+																placeholder='e.g. 5.00'
+																value={field.value ?? ''}
+																onChange={e => {
+																	const raw = e.target.value
+																	if (raw === '' || /^\d*\.?\d*$/.test(raw)) {
+																		const num = parseFloat(raw)
+																		field.onChange(
+																			raw === '' || isNaN(num) ? undefined : num,
+																		)
+																	}
+																}}
+															/>
+														) : (
+															<Input
+																type='text'
+																inputMode='decimal'
+																placeholder='% off sale price'
+																value={comboPctInput}
+																onChange={e => {
+																	const raw = e.target.value
+																	if (raw === '' || /^\d*\.?\d*$/.test(raw)) {
+																		setComboPctInput(raw)
+																		const pct = parseFloat(raw) || 0
+																		const computed =
+																			regularPrice > 0
+																				? regularPrice * (1 - pct / 100)
+																				: 0
+																		field.onChange(
+																			computed > 0
+																				? parseFloat(computed.toFixed(4))
+																				: undefined,
+																		)
+																	}
+																}}
+															/>
+														)}
+													</FormControl>
+												</div>
+												{comboPriceMode === 'pct' &&
+													field.value != null &&
+													field.value > 0 && (
+														<p className='text-xs text-muted-foreground'>
+															= ${field.value.toFixed(2)}/unit
+														</p>
+													)}
+												<FormMessage />
+											</FormItem>
+										)
+									}}
+								/>
+							</div>
 
-						{/* Combo total preview */}
-						{comboTotalPreview !== null && (
-							<p className='text-sm text-muted-foreground'>
-								{t('label_combo_preview', {
-									qty: watchComboQty!,
-									price: `$${watchComboPrice!.toFixed(2)}`,
-									total: `$${comboTotalPreview.toFixed(2)}`,
-								})}
-							</p>
-						)}
-						</div>{/* end scrollable body */}
+							{/* Combo total preview */}
+							{comboTotalPreview !== null && (
+								<p className='text-sm text-muted-foreground'>
+									{t('label_combo_preview', {
+										qty: watchComboQty!,
+										price: `$${watchComboPrice!.toFixed(2)}`,
+										total: `$${comboTotalPreview.toFixed(2)}`,
+									})}
+								</p>
+							)}
+						</div>
 
 						{/* Sticky footer */}
 						<div className='px-6 py-4 border-t shrink-0'>

@@ -21,22 +21,19 @@ const PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50]
 
 interface DataTablePaginationProps<TData> {
 	table: Table<TData>
+	totalCount: number
 }
 
 export function DataTablePagination<TData>({
 	table,
+	totalCount,
 }: DataTablePaginationProps<TData>) {
 	const t = useTranslations('inventory')
-	const selectedCount = table.getFilteredSelectedRowModel().rows.length
-	const totalCount = table.getFilteredRowModel().rows.length
 
 	return (
 		<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between py-2'>
 			<div className='text-xs text-muted-foreground tabular-nums'>
-				{t('label_selected_of', {
-					selected: String(selectedCount),
-					total: String(totalCount),
-				})}
+				{t('label_total_items', { count: String(totalCount) })}
 			</div>
 
 			<div className='flex items-center gap-4'>
