@@ -26,7 +26,7 @@ type ColumnsConfig = {
 	onAddStock: (item: InventoryItemWithCategory) => void
 	onDelete: (item: InventoryItemWithCategory) => void
 	onAddToCart: (item: InventoryItemWithCategory) => void
-	cartItems: string[]
+	cartItems: InventoryItemWithCategory[]
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	t: (key: any, values?: any) => string
 }
@@ -44,7 +44,7 @@ export function getColumns(
 			size: 40,
 			cell: ({ row }) => {
 				const item = row.original
-				const isInCart = cartItems.includes(item.id)
+				const isInCart = cartItems.some(i => i.id === item.id)
 				const outOfStock = item.stockQty <= 0
 				return (
 					<Button

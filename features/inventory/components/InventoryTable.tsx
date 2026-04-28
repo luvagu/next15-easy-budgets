@@ -95,7 +95,7 @@ export function InventoryTable({
 		useLocalStorage<VisibilityState>('inventoryColumnVisibility', {})
 
 	// Cart state — persisted to localStorage so items survive page refresh
-	const [cartItems, setCartItems, clearCart] = useLocalStorage<string[]>(
+	const [cartItems, setCartItems, clearCart] = useLocalStorage<InventoryItemWithCategory[]>(
 		'inventory-cart',
 		[],
 	)
@@ -176,7 +176,7 @@ export function InventoryTable({
 	}
 
 	const handleSaleItemRemoved = (itemId: string) => {
-		setCartItems(prev => prev.filter(id => id !== itemId))
+		setCartItems(prev => prev.filter(i => i.id !== itemId))
 	}
 
 	const handleClearCart = () => {
@@ -197,12 +197,12 @@ export function InventoryTable({
 
 	// Cart handlers
 	const handleAddToCart = (item: InventoryItemWithCategory) => {
-		const isAlreadyInCart = cartItems.includes(item.id)
+		const isAlreadyInCart = cartItems.some(i => i.id === item.id)
 		setCartItems(
 			prev =>
 				isAlreadyInCart
-					? prev.filter(id => id !== item.id) // remove item
-					: [...prev, item.id], // add item
+					? prev.filter(i => i.id !== item.id)
+					: [...prev, item],
 		)
 		if (isAlreadyInCart) {
 			toast.warning(t('toast_item_removed_from_cart', { item: item.name }))
@@ -218,12 +218,6 @@ export function InventoryTable({
 		}
 		setSaleDialogOpen(true)
 	}
-
-	// Derive cart item objects from current page items + stable cart IDs
-	const cartItemObjects = useMemo(
-		() => items.filter(i => cartItems.includes(i.id)),
-		[items, cartItems],
-	)
 
 	const columns = useMemo(
 		() =>
@@ -263,8 +257,8 @@ export function InventoryTable({
 	})
 
 	// Default USD amount for calculator — sum of cart items' sale prices
-	const cartTotal = cartItemObjects.reduce(
-		(sum, r) => sum + r.baseSalePriceUsd,
+	const cartTotal = cartItems.reduce(
+		(sum: number, r) => sum + r.baseSalePriceUsd,
 		0,
 	)
 
@@ -416,7 +410,7 @@ export function InventoryTable({
 			<RegisterSaleDialog
 				open={saleDialogOpen}
 				onOpenChange={setSaleDialogOpen}
-				selectedItems={cartItemObjects}
+				selectedItems={cartItems}
 				onSuccess={handleSaleSuccess}
 				onItemRemoved={handleSaleItemRemoved}
 				onClearCart={handleClearCart}
