@@ -137,27 +137,36 @@ export async function getItemsByUser(
 		conditions.push(eq(InventoryItemsTable.brand, brand))
 	}
 	if (search && search.trim().length > 0) {
+		// Must enable the Postgres `unaccent` extension manually on DB console
+		// CREATE EXTENSION IF NOT EXISTS unaccent;
 		const term = `%${search.trim()}%`
 		conditions.push(
-			sql`(${InventoryItemsTable.name} ILIKE ${term} OR COALESCE(${InventoryItemsTable.brand}, '') ILIKE ${term})`,
+			sql`(unaccent(${InventoryItemsTable.name}) ILIKE unaccent(${term}) OR unaccent(COALESCE(${InventoryItemsTable.brand}, '')) ILIKE unaccent(${term}))`,
 		)
 	}
 
-	const [items, countResult] = await Promise.all([
-		db.query.InventoryItemsTable.findMany({
-			where: and(...conditions),
-			with: { category: true },
-			orderBy: ({ createdAt }, { desc }) => desc(createdAt),
-			limit,
-			offset,
-		}),
-		db
-			.select({ count: count() })
-			.from(InventoryItemsTable)
-			.where(and(...conditions)),
-	])
+	try {
+		const [items, countResult] = await Promise.all([
+			db.query.InventoryItemsTable.findMany({
+				where: and(...conditions),
+				with: { category: true },
+				orderBy: ({ createdAt }, { desc }) => desc(createdAt),
+				limit,
+				offset,
+			}),
+			db
+				.select({ count: count() })
+				.from(InventoryItemsTable)
+				.where(and(...conditions)),
+		])
 
-	return { items, totalCount: countResult[0].count }
+		return { items, totalCount: countResult[0].count }
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.error('@@ getItemsByUser error:', error)
+
+		return { items: [], totalCount: 0 }
+	}
 }
 
 export async function getItemsCount(
@@ -221,7 +230,10 @@ export async function getBrandsWithItemCount(userId: string) {
 		.groupBy(InventoryItemsTable.brand)
 		.orderBy(InventoryItemsTable.brand)
 
-	return rows.filter(r => r.brand !== null) as { brand: string; itemCount: number }[]
+	return rows.filter(r => r.brand !== null) as {
+		brand: string
+		itemCount: number
+	}[]
 }
 
 export async function renameBrand({
